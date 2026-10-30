@@ -1,6 +1,6 @@
 const community = window.COMMUNITY_DATA;
 
-const users = community.users || [];
+let users = community.users || [];
 const currentUserId = String(community.currentUserId);
 const isRoot = community.currentUserRole === "root";
 
@@ -200,6 +200,7 @@ async function updateUserRole() {
     }
 
     closeRoleModal();
+    localStorage.removeItem("users");
     showToast("Role updated successfully.");
 
     // Refresh server-rendered role sections and counts.
@@ -254,3 +255,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// app.js calls draw() after its shared USERS list has loaded.
+function draw() {
+  if (typeof USERS !== "undefined" && Array.isArray(USERS) && USERS.length) {
+    users = USERS;
+  }
+  const roles = ["root", "admin", "user"];
+  const total = document.querySelector("[data-community-total]");
+  if (total) total.textContent = String(users.length);
+  roles.forEach((role) => {
+    const members = users
+      .filter((user) => String(user.role || "user").toLowerCase() === role)
+      .slice()
+      .sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+    const grid = document.querySelector(`[data-role-grid="${role}"]`);
+    const count = document.querySelector(`[data-role-count="${role}"]`);
+    const summary = document.querySelector(`[data-role-summary="${role}"]`);
+    if (count) count.textContent = `${members.length} member(s)`;
+    if (summary) summary.textContent = String(members.length);
+    if (!grid) return;
+    grid.innerHTML = members.length
+      ? members
+          .map((user) => {
+            const roleClass =
+              role === "root"
+                ? "root-card"
+                : role === "admin"
+                  ? "admin-card"
+                  : "";
+            const badgeClass =
+              role === "root"
+                ? "root-badge"
+                : role === "admin"
+                  ? "admin-badge"
+                  : "user-badge";
+            const label =
+              role === "root" ? "ROOT" : role === "admin" ? "ADMIN" : "MEMBER";
+            const first = String(user.name || "?")
+              .trim()
+              .charAt(0)
+              .toUpperCase();
+            const self = String(user.id) === currentUserId ? "is-self" : "";
+            return `<article class="member-card ${roleClass} ${self}">
+        <div class="member-avatar">${escapeHTML(first)}</div>
+        <div class="member-details"><strong>${escapeHTML(user.name || "Unknown member")}</strong>
+          <span>${escapeHTML(user.email || "")}</span></div>
+        <span class="role-badge ${badgeClass}">${label}</span>
+      </article>`;
+          })
+          .join("")
+      : `<p class="empty-section">${role === "root" ? "No root account found." : role === "admin" ? "No administrators yet." : "No members yet."}</p>`;
+  });
+}
+
+document.addEventListener("DOMContentLoaded", draw);

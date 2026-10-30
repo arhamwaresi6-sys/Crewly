@@ -1036,40 +1036,41 @@ tr:hover td {
   font-weight: 600;
 }
 
-/* community page = BLACK theme (just re-declares the color variables!) */
+/* Community page theme: the shared SplitWise+ palette on a black canvas. */
 body.community {
-  --bg: #08080c;
-  --card: #101018;
-  --text: #f3f3f8;
-  --muted: #a0a0b8;
-  --line: #f3f3f8;
-  --shadow-c: #7c3aed;
-  --field: #05050a;
-  --soft: #1c1c2a;
-  --dash: #2a2a3c;
-  --grid: #15151f;
-  --user-line: #3a3a50;
-  --accent-bg: #ffffff;
-  --accent-fg: #000000;
+  --bg: #08070b;
+  --card: #121016;
+  --text: #f6f2fb;
+  --muted: #a9a2b3;
+  --line: #342c3d;
+  --shadow-c: #6d3b91;
+  --field: #100d14;
+  --soft: #211a29;
+  --dash: #3b3343;
+  --grid: #151219;
+  --user-line: #4c4056;
+  --accent-bg: #e3d7ff;
+  --accent-fg: #191020;
 }
 body.community::before {
   background:
     radial-gradient(
-      620px 420px at 82% -6%,
-      rgba(168, 85, 247, 0.32),
-      transparent 70%
+      620px 420px at 88% -8%,
+      rgba(142, 79, 192, 0.16),
+      transparent 72%
     ),
     radial-gradient(
-      520px 420px at -4% 42%,
-      rgba(99, 102, 241, 0.2),
-      transparent 70%
+      520px 420px at -8% 48%,
+      rgba(79, 143, 224, 0.1),
+      transparent 72%
     );
 }
 body.community .hl {
-  background: linear-gradient(transparent 58%, #7c3aed 58%);
+  background: linear-gradient(transparent 58%, #7044a2 58%);
 }
 body.community .modal-backdrop {
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: none;
 }
 
 /* ---------- Landing page ---------- */

@@ -15,7 +15,7 @@ content %}
     </div>
 
     <div class="community-total">
-      <span class="total-number">{{ users|length }}</span>
+      <span class="total-number" data-community-total>{{ users|length }}</span>
       <span class="total-label">Community members</span>
     </div>
   </header>
@@ -26,7 +26,7 @@ content %}
       <div class="summary-icon">♛</div>
       <div>
         <span>Root</span>
-        <strong
+        <strong data-role-summary="root"
           >{{ users|selectattr('role', 'equalto', 'root')|list|length }}</strong
         >
       </div>
@@ -36,7 +36,7 @@ content %}
       <div class="summary-icon">✦</div>
       <div>
         <span>Admins</span>
-        <strong
+        <strong data-role-summary="admin"
           >{{ users|selectattr('role', 'equalto', 'admin')|list|length
           }}</strong
         >
@@ -47,7 +47,7 @@ content %}
       <div class="summary-icon">♙</div>
       <div>
         <span>Members</span>
-        <strong
+        <strong data-role-summary="user"
           >{{ users|selectattr('role', 'equalto', 'user')|list|length }}</strong
         >
       </div>
@@ -71,6 +71,7 @@ content %}
       <input
         type="search"
         id="roleSearch"
+        aria-label="Search community members by name or email"
         placeholder="Search by name or Gmail..."
         autocomplete="off"
       />
@@ -100,12 +101,12 @@ content %}
         <span class="section-icon root-icon">♛</span>
         <h2>Root</h2>
       </div>
-      <span class="section-count">
+      <span class="section-count" data-role-count="root">
         {{ users|selectattr('role', 'equalto', 'root')|list|length }} member(s)
       </span>
     </div>
 
-    <div class="member-grid">
+    <div class="member-grid" data-role-grid="root">
       {% for user in users if user.role == 'root' %}
       <article class="member-card root-card">
         <div class="member-avatar">{{ user.name[:1]|upper }}</div>
@@ -128,12 +129,12 @@ content %}
         <span class="section-icon admin-icon">✦</span>
         <h2>Administrators</h2>
       </div>
-      <span class="section-count">
+      <span class="section-count" data-role-count="admin">
         {{ users|selectattr('role', 'equalto', 'admin')|list|length }} member(s)
       </span>
     </div>
 
-    <div class="member-grid">
+    <div class="member-grid" data-role-grid="admin">
       {% for user in users if user.role == 'admin' %}
       <article class="member-card admin-card">
         <div class="member-avatar">{{ user.name[:1]|upper }}</div>
@@ -156,12 +157,12 @@ content %}
         <span class="section-icon user-icon">♙</span>
         <h2>Members</h2>
       </div>
-      <span class="section-count">
+      <span class="section-count" data-role-count="user">
         {{ users|selectattr('role', 'equalto', 'user')|list|length }} member(s)
       </span>
     </div>
 
-    <div class="member-grid">
+    <div class="member-grid" data-role-grid="user">
       {% for user in users if user.role == 'user' %}
       <article class="member-card">
         <div class="member-avatar">{{ user.name[:1]|upper }}</div>
