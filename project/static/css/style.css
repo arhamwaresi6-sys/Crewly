@@ -2188,3 +2188,310 @@ textarea.input {
     scroll-behavior: auto;
   }
 }
+
+/* ---------- Premium mobile navigation and modal fit ---------- */
+@media (max-width: 979px) {
+  .bottom-nav {
+    align-items: center;
+    min-height: 62px;
+    padding: 5px 6px;
+    border-radius: 22px;
+  }
+
+  .bottom-nav a {
+    display: flex;
+    min-width: 0;
+    min-height: 42px;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 5px 3px;
+    border-radius: 15px;
+    font-size: 0;
+    line-height: 1.1;
+    transition:
+      flex 180ms ease,
+      transform 180ms ease,
+      background 180ms ease;
+  }
+
+  .bottom-nav .ico {
+    display: block;
+    flex: none;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .bottom-nav a.active,
+  .bottom-nav a:hover,
+  .bottom-nav a:focus,
+  .bottom-nav a:focus-visible {
+    min-height: 54px;
+    flex: 1.5 1 0;
+    padding: 7px 5px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    transform: translateY(-5px);
+  }
+
+  .bottom-nav a:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 559px) {
+  .nav-wrap {
+    padding: 8px 10px 0;
+  }
+
+  .nav {
+    width: 100%;
+    gap: 7px;
+    padding: 7px 8px;
+    border-radius: 18px;
+  }
+
+  .app-logo {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .app-logo .logo-text {
+    display: inline !important;
+    white-space: nowrap;
+    font-size: 0.94rem;
+  }
+
+  .logo {
+    gap: 6px;
+  }
+  .logo-tile {
+    width: 32px;
+    height: 32px;
+    flex: none;
+  }
+  .nav-right {
+    min-width: 0;
+    flex: 0 0 auto;
+    gap: 5px;
+  }
+  .demo-select {
+    max-width: min(90px, 24vw);
+    padding: 5px 7px;
+    font-size: 0.63rem;
+  }
+  .nav-right .icon-btn {
+    width: 36px;
+    height: 36px;
+    flex: none;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    overflow-y: auto;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 540px;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+    margin: auto auto 0;
+    padding: 18px 14px;
+    border-radius: 22px 22px 0 0;
+  }
+}
+
+.modal .field,
+.modal .two,
+.modal .two > * {
+  min-width: 0;
+}
+
+.modal .input,
+.modal select.input,
+.modal textarea.input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.modal textarea.input {
+  resize: vertical;
+}
+
+/* Mobile navigation containment and friend-add controls */
+@media (max-width: 979px) {
+  .bottom-nav {
+    left: 50%;
+    right: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: min(520px, calc(100% - 24px));
+    max-width: calc(100vw - 24px);
+    min-height: 68px;
+    padding: 5px;
+    overflow: visible;
+    transform: translateX(-50%);
+  }
+
+  .bottom-nav a {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 0;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .bottom-nav a.active,
+  .bottom-nav a:hover,
+  .bottom-nav a:focus,
+  .bottom-nav a:focus-visible {
+    min-height: 52px;
+    flex: 1.3 1 0;
+    padding: 6px 3px;
+    transform: none;
+    box-shadow:
+      inset 0 0 0 2px var(--line),
+      2px 2px 0 var(--shadow-c);
+  }
+}
+
+@media (max-width: 559px) {
+  .nav {
+    justify-content: space-between;
+  }
+  .nav-right {
+    margin-left: auto;
+  }
+  #nav-avatar {
+    display: none !important;
+  }
+  .page-head .btn,
+  .page-head .btn-primary,
+  .page-head .row .btn,
+  .add-friend-btn,
+  #addFriendBtn,
+  #add-friend-btn {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .page-head .row {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .modal .modal-actions {
+    flex-wrap: wrap;
+  }
+  .modal .modal-actions > * {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .modal form .btn,
+  .modal form button[type="submit"],
+  .modal form input[type="submit"] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+}
+
+/* Icon-only Add Friends action on narrow screens */
+@media (max-width: 559px) {
+  button.add-friend-btn,
+  button.btn-add-friend,
+  button.add-friend-button,
+  button[id*="addfriend" i],
+  button[id*="add-friend" i],
+  button[class*="addfriend" i],
+  button[class*="add-friend" i],
+  button[data-action*="add-friend" i],
+  button[aria-controls*="friend" i],
+  button[data-bs-target*="friend" i] {
+    display: inline-grid;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px;
+    min-height: 46px;
+    flex: 0 0 46px;
+    place-items: center;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 50% !important;
+    font-size: 0;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  button.add-friend-btn::before,
+  button.btn-add-friend::before,
+  button.add-friend-button::before,
+  button[id*="addfriend" i]::before,
+  button[id*="add-friend" i]::before,
+  button[class*="addfriend" i]::before,
+  button[class*="add-friend" i]::before,
+  button[data-action*="add-friend" i]::before,
+  button[aria-controls*="friend" i]::before,
+  button[data-bs-target*="friend" i]::before {
+    content: "+";
+    display: block;
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  button.add-friend-btn > *,
+  button.btn-add-friend > *,
+  button.add-friend-button > *,
+  button[id*="addfriend" i] > *,
+  button[id*="add-friend" i] > *,
+  button[class*="addfriend" i] > *,
+  button[class*="add-friend" i] > *,
+  button[data-action*="add-friend" i] > *,
+  button[aria-controls*="friend" i] > *,
+  button[data-bs-target*="friend" i] > * {
+    display: none !important;
+  }
+}
+
+@media (max-width: 559px) {
+  button[class*="add" i][class*="friend" i],
+  button[id*="add" i][id*="friend" i],
+  body.friends .page-head button.btn-primary {
+    display: inline-grid;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px;
+    min-height: 46px;
+    flex: 0 0 46px;
+    place-items: center;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 50% !important;
+    font-size: 0;
+    line-height: 1;
+  }
+
+  button[class*="add" i][class*="friend" i]::before,
+  button[id*="add" i][id*="friend" i]::before,
+  body.friends .page-head button.btn-primary::before {
+    content: "+";
+    display: block;
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  button[class*="add" i][class*="friend" i] > *,
+  button[id*="add" i][id*="friend" i] > *,
+  body.friends .page-head button.btn-primary > * {
+    display: none !important;
+  }
+}
