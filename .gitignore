@@ -4,30 +4,23 @@ __pycache__/
 *$py.class
 
 # Virtual environments inside backend/
-/backend/env/
-/backend/venv/
-/backend/.venv/
-/backend/ENV/
+env/
+venv/
+.venv/
+ENV/
 
 # Local secrets and environment configuration
-/backend/.env
-/backend/.env.*
-!/backend/.env.example
-/backend/.flaskenv
-!/backend/.flaskenv.example
+.env
+.env.*
+.env.example
+.flaskenv
+.flaskenv.example
 
-# Flask runtime files and local databases
-/backend/instance/
-/backend/project/instance/
-/backend/*.db
-/backend/*.sqlite
-/backend/*.sqlite3
+
 
 # Test and tooling output
-/backend/.pytest_cache/
-/backend/.mypy_cache/
-/backend/.ruff_cache/
-/backend/.coverage
-/backend/htmlcov/
-frontend/
-backend.zip
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
