@@ -1,0 +1,273 @@
+{% extends "base.html" %} {% block title %}Split expenses with friends{%
+endblock %} {% block nav %}{% include '_landing_nav.html' %}{% endblock %} {%
+block content %}
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-text">
+    <span class="eyebrow"><span>✦</span> SPLITWISE+ · FREE FOR FRIENDS</span>
+
+    {# each letter becomes a chunky tile (see makeTiles() in app.js) #}
+    <h1 class="tile-title" aria-label="Split expenses easily">
+      <span class="tile-line" data-tiles="SPLIT" data-style="navy">SPLIT</span>
+      <span class="tile-line" data-tiles="EXPENSES" data-style="grad"
+        >EXPENSES</span
+      >
+      <span class="tile-line" data-tiles="EASILY" data-style="navy"
+        >EASILY</span
+      >
+    </h1>
+
+    <p class="hero-sub">
+      Many friends. One <span class="grad-text">fair split.</span>
+    </p>
+    <ul class="hero-meta">
+      <li>📅 Trips · rent · dinners</li>
+      <li>✉️ Invite by Gmail</li>
+    </ul>
+    <div class="row wrap hero-cta">
+      <a
+        class="btn btn-primary btn-lg"
+        href="{{ url_for('auth.login', mode='signup') }}"
+        >Start splitting →</a
+      >
+      <a class="btn btn-lg" href="{{ url_for('main.dashboard') }}"
+        >Peek at the demo</a
+      >
+    </div>
+  </div>
+
+  <div class="hero-art" aria-hidden="true">
+    <span class="deco deco-dash"></span>
+    <svg class="deco deco-star" viewBox="0 0 100 100">
+      <path
+        d="M50 2 C54 30 70 46 98 50 C70 54 54 70 50 98 C46 70 30 54 2 50 C30 46 46 30 50 2Z"
+        fill="#8e4fc0"
+        stroke="#14233f"
+        stroke-width="5"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <svg class="deco deco-star s2" viewBox="0 0 100 100">
+      <path
+        d="M50 2 C54 30 70 46 98 50 C70 54 54 70 50 98 C46 70 30 54 2 50 C30 46 46 30 50 2Z"
+        fill="#ffd3e8"
+        stroke="#14233f"
+        stroke-width="6"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span class="deco deco-dot"></span>
+
+    <div class="float-card fc1">
+      <span class="price-sticker">৳6,000 each</span>
+      <div class="emoji" style="background: var(--lilac)">🏖️</div>
+      <b class="fc-title">Cox's Bazar Trip</b>
+      <div class="fc-foot">
+        <span>4 friends</span><span class="date-pill">5 Nov</span>
+      </div>
+    </div>
+    <div class="float-card fc2">
+      <div class="emoji" style="background: var(--sky)">🏠</div>
+      <b class="fc-title">Flat Rent</b>
+      <div class="fc-foot">
+        <span>Housing</span><span class="date-pill">1 Oct</span>
+      </div>
+    </div>
+    <div class="float-card fc3">
+      <div class="emoji" style="background: var(--peach)">🍕</div>
+      <b class="fc-title">Friday Dinner</b>
+      <div class="fc-foot">
+        <span>Settled ✓</span><span class="date-pill">9 Oct</span>
+      </div>
+    </div>
+
+    <div class="deco deco-mascot">{% include '_mascot.html' %}</div>
+  </div>
+</section>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker">
+    <div class="ticker-track">
+      {% for _ in range(2) %} {% for t in ['SPLIT IT FAIR', 'NO AWKWARD
+      REMINDERS', 'INVITE BY GMAIL', 'YOUR CARD · YOUR RULES', 'EVERYONE SEES
+      EVERYTHING', 'STAY FRIENDS'] %}
+      <span>{{ t }}</span><i>✦</i>
+      {% endfor %} {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ============ FEATURES ============ -->
+<section class="section" id="features">
+  <div class="section-head">
+    <span class="eyebrow">✦ FEATURES</span>
+    <h2>Everything you need to <span class="hl">share costs</span></h2>
+    <p>Simple on purpose. You can learn it in two minutes.</p>
+  </div>
+  <div class="features">
+    <div class="card feature c-lilac">
+      <div class="emoji">📅</div>
+      <h3>Events</h3>
+      <p>
+        Trips, rent, dinners – one event per shared cost. Click an event to open
+        its own dashboard.
+      </p>
+    </div>
+    <div class="card feature c-sky">
+      <div class="emoji">✉️</div>
+      <h3>Invite by Gmail</h3>
+      <p>
+        Search a registered user by Gmail and invite them in one tap. They
+        accept from their dashboard.
+      </p>
+    </div>
+    <div class="card feature c-mint">
+      <div class="emoji">➗</div>
+      <h3>Auto split</h3>
+      <p>
+        The total is divided equally at the start. Raise or lower it any time
+        and every card updates.
+      </p>
+    </div>
+    <div class="card feature c-peach">
+      <div class="emoji">💳</div>
+      <h3>Personal cards</h3>
+      <p>
+        Everyone adds or reduces their own expenses on their own card. Others
+        can look, only you can edit.
+      </p>
+    </div>
+    <div class="card feature c-lemon">
+      <div class="emoji">📊</div>
+      <h3>Dashboard</h3>
+      <p>
+        See what you owe, what you paid and where your money goes by category.
+      </p>
+    </div>
+    <div class="card feature c-pink">
+      <div class="emoji">🛡️</div>
+      <h3>Admin tools</h3>
+      <p>
+        Admins keep things safe: manage users, events, reports and
+        announcements.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="section" id="how">
+  <div class="section-head">
+    <span class="eyebrow">✦ HOW IT WORKS</span>
+    <h2>Three easy <span class="hl">steps</span></h2>
+  </div>
+  <div class="steps">
+    <div class="card">
+      <div class="step-n">1</div>
+      <h3>Create an event</h3>
+      <p class="muted">
+        Give it a name, a starting expense and an optional budget.
+      </p>
+    </div>
+    <div class="card">
+      <div class="step-n">2</div>
+      <h3>Invite people</h3>
+      <p class="muted">Type their Gmail. Everyone joins the equal split.</p>
+    </div>
+    <div class="card">
+      <div class="step-n">3</div>
+      <h3>Adjust &amp; settle</h3>
+      <p class="muted">
+        Everyone updates their own card, marks it paid, and the owner settles
+        the event.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROLES (same colors as the Community page) ============ -->
+<section class="section" id="roles">
+  <div class="section-head">
+    <span class="eyebrow">✦ ROLES</span>
+    <h2>Three roles, <span class="hl">zero confusion</span></h2>
+  </div>
+  <div class="features roles">
+    <div class="card role-user">
+      <span class="pill pill-user">User</span>
+      <h3>User</h3>
+      <p>Creates events, edits their own card, joins by invitation.</p>
+    </div>
+    <div class="card role-admin">
+      <span class="pill pill-admin">Admin</span>
+      <h3>Admin</h3>
+      <p>
+        Everything a user can do, plus the admin panel: ban users, remove
+        events, handle reports.
+      </p>
+    </div>
+    <div class="card role-root">
+      <span class="pill pill-root">Root</span>
+      <h3>Root</h3>
+      <p>
+        The one and only owner. Promotes or demotes admins by searching their
+        Gmail.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section" id="faq">
+  <div class="section-head">
+    <span class="eyebrow">✦ FAQ</span>
+    <h2>Quick <span class="hl">answers</span></h2>
+  </div>
+  <div class="faq-list">
+    <details>
+      <summary>Can other people change my card?</summary>
+      <p>
+        No. Everyone can view every card in the event, but only the card's owner
+        can change it.
+      </p>
+    </details>
+    <details>
+      <summary>Who can change the total expense?</summary>
+      <p>
+        The event owner (the person who created it). The equal split
+        recalculates automatically.
+      </p>
+    </details>
+    <details>
+      <summary>How do I invite someone?</summary>
+      <p>
+        While creating an event, type their Gmail. If they are registered, they
+        show up in the list – tap to invite.
+      </p>
+    </details>
+    <details>
+      <summary>Is the money moved through the app?</summary>
+      <p>
+        No. SplitWise+ only tracks who owes what. You settle outside the app.
+      </p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="section">
+  <div class="cta">
+    <div class="mascot-wrap">{% include '_mascot.html' %}</div>
+    <h2>Ready to split smarter?</h2>
+    <p>Start your first event in under a minute.</p>
+    <a class="btn btn-lg" href="{{ url_for('auth.login', mode='signup') }}"
+      >Get started free →</a
+    >
+  </div>
+</section>
+
+<footer class="footer">
+  © 2026 SplitWise+ · Made with ✦ as a class project
+</footer>
+{% endblock %}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- default value is home -->
+    <title>{% block title %}Home{% endblock %} · SplitWise+</title>
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body class="{% block body_class %}{% endblock %}">
+    <!-- navbar -->
+    {% block nav %}
+    <!-- default nav -->
+    {% include '_app_nav.html' %} {% endblock %} {% block content%}{% endblock
+    %} {# Page addresses for JavaScript – Flask fills these in so JS never
+    hard-codes a URL #}
+    <script>
+      window.ROUTES = {
+        home: "{{ url_for('main.index') }}",
+        login: "{{ url_for('auth.login') }}",
+        dashboard: "{{ url_for('main.dashboard') }}",
+        events: "{{ url_for('main.events') }}",
+        event: "{{ url_for('main.event', event_id=0) }}".replace(
+          "/0",
+          "/__ID__",
+        ),
+        users: "{{ url_for('main.users') }}",
+        community: "{{ url_for('main.community') }}",
+        admin: "{{ url_for('main.admin') }}",
+      };
+    </script>
+    <script>
+      window.CURRENT_USER = {% if current_user.is_authenticated %}
+        {{
+          {
+            "id": current_user.id,
+            "name": current_user.name,
+            "email": current_user.email,
+            "role": current_user.role,
+            "status": current_user.status,
+            "joined": current_user.created_at.date().isoformat(),
+            "count_event": current_user.count_event,
+        } | tojson
+        }}
+      {% else %}
+        null
+      {% endif %};
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

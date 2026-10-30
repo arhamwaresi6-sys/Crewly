@@ -1,0 +1,27 @@
+{# Navbar for the public home page #}
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="logo" href="{{ url_for('main.index') }}"
+      ><span class="logo-tile">৳</span
+      ><span class="logo-text">SplitWise<b>+</b></span></a
+    >
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#roles">Roles</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      {%if not current_user.is_authenticated%}
+      <a class="btn btn-sm land-login" href="{{ url_for('auth.login') }}"
+        >Log in</a
+      >
+      <a
+        class="btn btn-sm btn-primary"
+        href="{{ url_for('auth.login', mode='signup') }}"
+        >Get started</a
+      >
+      {%endif%}
+    </div>
+  </nav>
+</header>

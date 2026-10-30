@@ -1,0 +1,59 @@
+{# Navbar used on every app page. Each page sets {% set active_page = 'events'
+%} to highlight its link. #} {% set links = [ ('main.dashboard',
+'dashboard','🏠', 'Dashboard'), ('main.events', 'events', '📅', 'Events'),
+('main.users','users', '👥', 'Users'), ('main.community', 'community', '🌐',
+'Community'),('main.friends', 'friends', '🤝', 'Friends'), ('main.admin',
+'admin', '🛡️', 'Admin') ] %}
+
+<header class="nav-wrap">
+  <nav class="nav">
+    <a class="logo app-logo" href="{{ url_for('main.index') }}"
+      ><span class="logo-tile">৳</span
+      ><span class="logo-text">SplitWise<b>+</b></span></a
+    >
+
+    {# desktop links #}
+    <div class="nav-links">
+      {% for endpoint, key, icon, label in links %}
+      <a
+        href="{{ url_for(endpoint) }}"
+        class="{{ 'active' if active_page == key }} {{ 'staff-only hide' if key == 'admin' }}"
+        >{{ label }}</a
+      >
+      {% endfor %}
+    </div>
+
+    <div class="nav-right">
+      <span>
+        <a
+          class="nav-profile"
+          id="demo-slot"
+          href="{{ url_for('main.profile') }}"
+          onchange="changeDemoUser(this.value)"
+        ></a>
+      </span>
+      <div id="nav-avatar"></div>
+      <div class="bell-wrap">
+        <button
+          class="icon-btn"
+          onclick="toggleBell()"
+          aria-label="Notifications"
+        >
+          🔔<i class="dot"></i>
+        </button>
+        <div id="bell" class="dropdown hide"></div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+{# phone: bottom tab bar #}
+<nav class="bottom-nav">
+  {% for endpoint, key, icon, label in links %}
+  <a
+    href="{{ url_for(endpoint) }}"
+    class="{{ 'active' if active_page == key }} {{ 'staff-only hide' if key == 'admin' }}"
+    ><span class="ico">{{ icon }}</span><span>{{ label }}</span></a
+  >
+  {% endfor %}
+</nav>

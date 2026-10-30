@@ -1,0 +1,199 @@
+{% extends "base.html" %} {% set active_page = 'dashboard' %} {% block title
+%}Dashboard{% endblock %} {% block content %}
+<main class="main">
+  <div class="page-head">
+    <div>
+      {% if current_user.is_authenticated %}
+      <h1 id="hello">
+        Welcome back, {{ current_user.name.split(' ')[0].capitalize() }} 👋
+      </h1>
+      {% else %}
+      <h1 id="hello">Welcome! 👋</h1>
+      {% endif %}
+      <p class="muted">
+        Here is where your <span class="hl">money</span> stands today.
+      </p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('main.events', new=1) }}"
+      >＋ New event</a
+    >
+  </div>
+
+  <!-- ===== summary numbers ===== -->
+  <section class="grid stats" id="stats">
+    {% if current_user.is_authenticated %}
+    <div class="card c-peach">
+      <div class="stat-label">You still owe</div>
+      <div class="stat-value down">৳ {{current_user.owe}}</div>
+    </div>
+    <div class="card c-mint">
+      <div class="stat-label">Already paid</div>
+      <div class="stat-value up">৳ {{current_user.paid}}</div>
+    </div>
+    <div class="card c-sky">
+      <div class="stat-label">Active events</div>
+      <div class="stat-value">{{current_user.count_active_event}}</div>
+    </div>
+    <div class="card c-lemon">
+      <div class="stat-label">Invitations</div>
+      <div class="stat-value">{{current_user.count_invitation}}</div>
+    </div>
+    {% else %}
+    <div class="card c-peach">
+      <div class="stat-label">You still owe</div>
+      <div class="stat-value down">৳ 0</div>
+    </div>
+    <div class="card c-mint">
+      <div class="stat-label">Already paid</div>
+      <div class="stat-value up">৳ 0</div>
+    </div>
+    <div class="card c-sky">
+      <div class="stat-label">Active events</div>
+      <div class="stat-value">0</div>
+    </div>
+    <div class="card c-lemon">
+      <div class="stat-label">Invitations</div>
+      <div class="stat-value">0</div>
+    </div>
+    {% endif %}
+  </section>
+
+  <div class="two-col mt">
+    <div>
+      <h2 class="section-title" style="margin-top: 0">Your active events</h2>
+      <div class="card" id="activeList">
+        {% for event in active_events %}
+        <a
+          class="list-row"
+          href="{{ url_for('main.event', event_id=event.id) }}"
+        >
+          <div
+            class="emoji"
+            style="width: 46px; height: 46px; font-size: 1.4rem"
+          >
+            {% if event.category == 'birthday' %}🎂 {% elif event.category ==
+            'housing' %}🏠 {% elif event.category == 'dinner' %}🍽️ {% elif
+            event.category == 'lunch' %}🥗 {% elif event.category == 'trip' %}✈️
+            {% elif event.category == 'party' %}🎉 {% elif event.category ==
+            'wedding' %}💍 {% elif event.category == 'graduation' %}🎓 {% elif
+            event.category == 'movie' %}🎬 {% elif event.category == 'sports'
+            %}⚽ {% elif event.category == 'study' %}📚 {% elif event.category
+            == 'shopping' %}🛍️ {% elif event.category == 'festival' %}🎊 {% else
+            %}🤝 {% endif %}
+          </div>
+
+          <div class="grow">
+            <b>{{ event.name }}</b>
+            <span class="muted small">
+              {{ event.crews|length }} members · {{ event.start_at.strftime('%d
+              %b %Y') if event.start_at else 'Date not set' }}
+            </span>
+          </div>
+
+          <div style="text-align: right">
+            <b
+              >{{ CURRENCY_SYMBOL if CURRENCY_SYMBOL is defined else '৳' }}{{
+              "%.2f"|format(event.calculate_expense) }}</b
+            >
+            <br />
+            <span
+              class="badge {% if event.status == 'completed' %}b-green {% elif event.status == 'cancelled' %}b-red {% else %}b-green {% endif %}"
+            >
+              {{ event.status|capitalize }}
+            </span>
+          </div>
+        </a>
+        {% else %}
+        <div class="empty">No active events yet.</div>
+        {% endfor %}
+      </div>
+
+      <h2 class="section-title">Where your money goes</h2>
+      <div class="card" id="categories">
+        {% for spending in spendings %}
+        <div class="cat-row">
+          <div class="row between">
+            <b>{{spending.name}}</b><b>{{spending.cost}}</b>
+          </div>
+          <div class="progress">
+            <div
+              style="width:{{(spending.cost/total_spendings * 100)|round|int if total_spendings > 0 else 0}}%"
+            ></div>
+          </div>
+        </div>
+        {%else%}
+        <div class="empty">Nothing yet.</div>
+        {%endfor%}
+      </div>
+    </div>
+
+    <div>
+      <h2 class="section-title" style="margin-top: 0">Invitations</h2>
+      <div class="card" id="invites">
+        {% for invitation in invitations %}
+        <div class="list-row">
+          <div
+            class="emoji"
+            style="width: 46px; height: 46px; font-size: 1.4rem"
+          >
+            {% if invitation.event.category == 'birthday' %}🎂 {% elif
+            invitation.event.category == 'housing' %}🏠 {% elif
+            invitation.event.category == 'dinner' %}🍽️ {% elif
+            invitation.event.category == 'lunch' %}🥗 {% elif
+            invitation.event.category == 'trip' %}✈️ {%elif
+            invitation.event.category == 'party' %}🎉 {% elif
+            invitation.event.category == 'wedding' %}💍 {% elif
+            invitation.event.category == 'graduation' %}🎓 {% elif
+            invitation.event.category == 'movie' %}🎬 {% elif
+            invitation.event.category == 'sports' %}⚽ {% elif
+            invitation.event.category == 'study' %}📚 {% elif
+            invitation.event.category == 'shopping' %}🛍️ {% elif
+            invitation.event.category == 'festival' %}🎊 {% else %}🤝 {% endif
+            %}
+          </div>
+          <div class="grow">
+            <b>{{invitation.event.name}}</b
+            ><span class="muted small">from {{invitation.sender.name}}</span>
+          </div>
+          <a
+            class="btn btn-primary btn-sm"
+            href="{{url_for('main.accept_invitation',event_id=invitation.event.id)}}"
+          >
+            Accept
+          </a>
+          <form
+            method="POST"
+            action="{{ url_for('main.decline_invitation', event_id=invitation.event.id) }}"
+          >
+            <button class="btn btn-sm" type="submit" title="Decline invitation">
+              ✕
+            </button>
+          </form>
+        </div>
+        {%else%}
+        <div class="empty">No pending invitations 🎉</div>
+        {%endfor%}
+      </div>
+
+      <h2 class="section-title">Recent activity</h2>
+      <div class="card" id="activity">
+        {%for activity in activities%}
+        <div class="list-row">
+          <div class="grow">
+            <b style="white-space: normal">{{activity.message}}</b
+            ><span class="muted small">
+              {{ activity.created_at.strftime('%Y-%m-%d') }} · {{
+              activity.created_at.strftime('%I:%M %p') }}
+            </span>
+          </div>
+        </div>
+        {%else%}
+        <div class="empty">No Activity!</div>
+        {%endfor%}
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

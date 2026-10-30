@@ -1,0 +1,32 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments inside backend/
+/backend/env/
+/backend/venv/
+/backend/.venv/
+/backend/ENV/
+
+# Local secrets and environment configuration
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/backend/.flaskenv
+!/backend/.flaskenv.example
+
+# Flask runtime files and local databases
+/backend/instance/
+/backend/project/instance/
+/backend/*.db
+/backend/*.sqlite
+/backend/*.sqlite3
+
+# Test and tooling output
+/backend/.pytest_cache/
+/backend/.mypy_cache/
+/backend/.ruff_cache/
+/backend/.coverage
+/backend/htmlcov/
+frontend/

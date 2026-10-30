@@ -1,0 +1,117 @@
+{% extends "base.html" %} {% set active_page = "friends" %} {% block title
+%}Friends{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/friends.css') }}"
+/>
+<div class="main friends-page">
+  <div class="page-head">
+    <div>
+      <h1>Friends 👥</h1>
+      <p>Add people and keep your circle together.</p>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div class="card friend-message">{{ message }}</div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- My friends -->
+  <section class="card friends-card">
+    <div class="section-title">
+      <h2>My Friends</h2>
+      <span class="badge">{{ my_friends|length }}</span>
+    </div>
+
+    {% if my_friends %}
+    <div class="friends-list">
+      {% for friend in my_friends %}
+      <div class="list-row friend-row">
+        <div class="friend-info">
+          <div class="avatar">{{ friend.name[:1]|upper }}</div>
+
+          <div>
+            <strong>{{ friend.name }}</strong>
+            <p>{{ friend.email }}</p>
+          </div>
+        </div>
+
+        <form
+          method="POST"
+          action="{{ url_for('main.remove_friend', user_id=friend.id) }}"
+          onsubmit="return confirm('Unfriend {{ friend.name|e }}?')"
+        >
+          <button class="btn btn-danger" type="submit">Unfriend</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <p>No friends yet.</p>
+      <span>Search for someone below and click Add!</span>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- Add friends -->
+  <section class="card friends-card">
+    <div class="section-title">
+      <h2>Add Friends ✨</h2>
+    </div>
+
+    <form
+      method="GET"
+      action="{{ url_for('main.friends') }}"
+      class="friend-search"
+    >
+      <input
+        class="input"
+        type="search"
+        name="q"
+        value="{{ search }}"
+        placeholder="Search by name or email..."
+      />
+
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+
+    <div class="friends-list"></div>
+
+    {% if users %}
+    <div class="friends-list">
+      {% for user in users %}
+      <div class="list-row friend-row">
+        <div class="friend-info">
+          <div class="avatar">{{ user.name[:1]|upper }}</div>
+
+          <div>
+            <strong>{{ user.name }}</strong>
+            <p>{{ user.email }}</p>
+          </div>
+        </div>
+
+        <form
+          method="POST"
+          action="{{ url_for('main.add_friend', user_id=user.id) }}"
+        >
+          <button class="btn btn-primary" type="submit">+ Add</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif search %}
+    <div class="empty">
+      <p>No users found.</p>
+      <span>Try another name or email.</span>
+    </div>
+    {% else %}
+    <div class="empty">
+      <p>Everyone you can add will appear here.</p>
+      <span>Use search to find a specific person.</span>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

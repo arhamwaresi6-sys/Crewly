@@ -1,0 +1,1547 @@
+{% extends "base.html" %} 
+{% set active_page = "events" %} 
+{% block title %}{{event.name }}{% endblock %} 
+{% block content %} 
+{% set is_owner = event.created_by_id == current_user.id %} 
+{% set can_manage_products = is_owner or (my_crew and my_crew.role == "treasurer") %} 
+{% set balance = (my_crew.expense +  my_crew.extra - my_crew.paid) if my_crew else 0 %} 
+{% set category_icons = {
+    "birthday":"🎂", "housing":"🏠", "hangout":"🧋", "dinner":"🍽️", "lunch":"🥗",
+    "trip":"🧳", "party":"🎉", "wedding":"💍", "graduation":"🎓", "movie":"🎬",
+    "sports":"⚽", "study":"📚", "shopping":"🛍️", "festival":"🎪", "other":"✨" } 
+%}
+
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/event.css') }}"
+/>
+
+<main class="main event-page" id="eventPage" data-event-id="{{ event.id }}" data-current-user="{{ current_user.name }}">
+  <a class="back event-back" href="{{ url_for('main.events') }}"
+    >← All events</a
+  >
+
+  <section class="event-hero">
+    <div class="event-hero-copy">
+      <div class="event-eyebrow">
+        <span class="event-eyebrow-dot"></span> EVENT WORKSPACE
+      </div>
+      <div class="event-title-line">
+        <span class="event-category-icon" aria-hidden="true"
+          >{{ category_icons.get(event.category, "✨") }}</span
+        >
+        <div class="event-title-content">
+          <h1>{{ event.name }}</h1>
+          <div class="event-meta">
+            <span>📁 {{ event.category|replace("_", " ")|title }}</span>
+            <span>👑 Hosted by {{ event.created_by.name }}</span>
+            <span
+              >👥 {{ event.crews|length }} member{{ "" if event.crews|length ==
+              1 else "s" }}</span
+            >
+          </div>
+        </div>
+      </div>
+      <p class="event-description">
+        {{ event.description or "No description has been added yet." }}
+      </p>
+      <div class="event-hero-tags">
+        <span class="event-status status-{{ event.status }}"
+          >{{ event.status|replace("_", " ")|title }}</span
+        >
+        {% if event.start_at %}
+        <span class="event-tag"
+          >📅 {{ event.start_at.strftime("%b %d, %Y") }}</span
+        >
+        {% endif %} {% if event.end_at %}
+        <span class="event-tag"
+          >🏁 Ends {{ event.end_at.strftime("%b %d, %Y") }}</span
+        >
+        {% endif %}
+      </div>
+    </div>
+
+    <aside class="event-hero-side">
+      <div class="hero-side-top">
+        <span class="hero-side-label">EVENT BUDGET</span
+        ><span class="hero-side-emoji">💸</span>
+      </div>
+      <div class="hero-budget">৳{{ "{:,.0f}".format(event.budget or 0) }}</div>
+      <div class="hero-budget-caption">Allocated funds for this event</div>
+      {% set budget_used = (event.calculate_expense / event.budget * 100) if
+      event.budget and event.budget > 0 else 0 %}
+      <div
+        class="budget-track"
+        role="progressbar"
+        aria-label="Budget used"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ [budget_used, 100]|min|round|int }}"
+      >
+        <span style="width: {{ [budget_used, 100]|min }}%"></span>
+      </div>
+      <div class="hero-budget-foot">
+        <span>{{ budget_used|round|int }}% used</span>
+        <span class="{{ 'money-negative' if event.remains < 0 else '' }}"
+          >৳{{ "{:,.0f}".format(event.remains) }} left</span
+        >
+      </div>
+    </aside>
+  </section>
+
+  <nav class="event-tabs" aria-label="Event sections" role="tablist">
+    <button
+      class="event-tab is-active"
+      type="button"
+      role="tab"
+      aria-selected="true"
+      aria-controls="panel-overview"
+      data-tab="overview"
+    >
+      <span>◫</span> Overview
+    </button>
+    <button
+      class="event-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="panel-finances"
+      data-tab="finances"
+    >
+      <span>৳</span> Finances
+    </button>
+    <button
+      class="event-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="panel-crew"
+      data-tab="crew"
+    >
+      <span>♧</span> Crew <i>{{ event.crews|length }}</i>
+    </button>
+    <button
+      class="event-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="panel-activity"
+      data-tab="activity"
+    >
+      <span>◷</span> Activity
+    </button>
+    {% if is_owner %}
+    <button
+      class="event-tab"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="panel-settings"
+      data-tab="settings"
+    >
+      <span>⚙</span> Settings
+    </button>
+    {% endif %}
+  </nav>
+
+  {# OVERVIEW #}
+  <section
+    class="event-panel is-active"
+    id="panel-overview"
+    role="tabpanel"
+    data-panel="overview"
+  >
+    <div class="event-section-heading">
+      <div>
+        <span class="section-kicker">THE BIG PICTURE</span>
+        <h2>Event overview</h2>
+        <p>Keep the plan, people, and money in one place.</p>
+      </div>
+      {% if is_owner %}<button
+        class="btn btn-primary"
+        type="button"
+        data-open-modal="invite-modal"
+      >
+        ＋ Invite people</button
+      >{% endif %}
+    </div>
+
+    <div class="event-stat-grid">
+      <article class="event-stat stat-purple">
+        <div class="event-stat-top"><span>Budget</span><span>🎯</span></div>
+        <strong>৳{{ "{:,.0f}".format(event.budget or 0) }}</strong
+        ><small>Funds allocated</small>
+      </article>
+      <article class="event-stat stat-blue">
+        <div class="event-stat-top">
+          <span>Recorded expenses</span><span>🧾</span>
+        </div>
+        <strong>৳{{ "{:,.0f}".format(event.calculate_expense) }}</strong
+        ><small>Products + all spendings</small>
+      </article>
+      <article class="event-stat stat-green">
+        <div class="event-stat-top">
+          <span>Budget remaining</span><span>🌱</span>
+        </div>
+        <strong class="{{ 'money-negative' if event.remains < 0 else '' }}"
+          >৳{{ "{:,.0f}".format(event.remains) }}</strong
+        ><small
+          >{% if event.remains < 0 %}Over budget{% else %}Available to spend{%
+          endif %}</small
+        >
+      </article>
+      <article class="event-stat stat-yellow">
+        <div class="event-stat-top">
+          <span>Crew members</span><span>🫶</span>
+        </div>
+        <strong>{{ event.crews|length }}</strong
+        ><small>People in this workspace</small>
+      </article>
+    </div>
+
+    <div class="event-two-col">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">SPENDING SNAPSHOT</span>
+            <h3>Where the money goes</h3>
+          </div>
+          <button class="text-action" type="button" data-go-tab="finances">
+            View finances →
+          </button>
+        </div>
+        <div class="expense-snapshot-row">
+          <span class="snapshot-icon snapshot-purple">🛍️</span>
+          <div class="snapshot-copy">
+            <b>Products</b><small>Purchased items and quantities</small>
+          </div>
+          <strong
+            >৳{{ "{:,.0f}".format(event.products|sum(attribute='total_price'))
+            }}</strong
+          >
+        </div>
+        <div class="expense-snapshot-row">
+          <span class="snapshot-icon snapshot-orange">🧾</span>
+          <div class="snapshot-copy">
+            <b>General spending</b><small>Other event costs</small>
+          </div>
+          <strong
+            >৳{{ "{:,.0f}".format(event.spendings|sum(attribute='cost'))
+            }}</strong
+          >
+        </div>
+        <div class="event-card-note">
+          The calculated expense is based on product totals and general
+          spending. It is different from the separate
+          <code>event.expense</code> database field.
+        </div>
+      </article>
+
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">YOUR PLACE IN THE CREW</span>
+            <h3>My event card</h3>
+          </div>
+          <span class="you-pill">YOU</span>
+        </div>
+        {% if my_crew %} {% set personal_balance = my_crew.paid + my_crew.budget - my_crew.expense -
+        my_crew.extra %}
+        <div class="personal-card-top">
+          <div class="personal-avatar">{{ current_user.name[:1]|upper }}</div>
+          <div class="snapshot-copy">
+            <b>{{ current_user.name }}</b
+            ><small
+              >{{ my_crew.role|title }} · {{ my_crew.status|title }}</small
+            >
+          </div>
+        </div>
+        <div class="personal-balance-label">Remaining Budget</div>
+        <div
+          class="personal-balance {{ 'money-positive' if personal_balance > 0 else ('money-negative' if personal_balance < 0 else '') }}"
+        >
+          ৳{{ "{:,.0f}".format(personal_balance|abs) }}
+          <span>
+  {% if personal_balance > 0 %}left
+  {% elif personal_balance < 0 %}over budget
+  {% else %}budget used{% endif %}
+</span>
+        </div>
+        <div class="personal-mini-grid">
+          <div>
+            <small>Your assigned expense</small
+            ><b>৳{{ "{:,.0f}".format(my_crew.expense) }}</b>
+          </div>
+          <div>
+            <small>Adjustments</small
+            ><b
+              class="{{ 'money-positive' if my_crew.extra < 0 else ('money-negative' if my_crew.extra > 0 else '') }}"
+              >৳{{ "{:,.0f}".format(my_crew.extra) }}</b
+            >
+          </div>
+          <div>
+            <small>Paid by you</small
+            ><b>৳{{ "{:,.0f}".format(my_crew.paid) }}</b>
+          </div>
+        </div>
+        <button class="btn btn-block" type="button" data-go-tab="finances">
+          See my finances →
+        </button>
+        {% else %}
+        <div class="event-empty">
+          <span>👋</span><b>You are not listed as a crew member.</b>
+          <p>
+            Your personal expense card will appear here when your membership is
+            connected.
+          </p>
+        </div>
+        {% endif %}
+      </article>
+    </div>
+
+    <div class="event-two-col">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">THE CREW</span>
+            <h3>People in this event</h3>
+          </div>
+          <button class="text-action" type="button" data-go-tab="crew">
+            View all →
+          </button>
+        </div>
+        {% for crew in event.crews[:5] %}
+        <div class="mini-member">
+          <div class="member-avatar">{{ crew.user.name[:1]|upper }}</div>
+          <div class="snapshot-copy">
+            <b
+              >{{ crew.user.name }}{% if crew.user_id == current_user.id %}
+              <span class="muted">(you)</span>{% endif %}</b
+            ><small>{{ crew.role|title }}</small>
+          </div>
+          <span
+            class="member-status {{ 'is-paid' if crew.status == 'paid' else 'is-unpaid' }}"
+            >{{ crew.status|title }}</span
+          >
+        </div>
+        {% else %}
+        <div class="event-empty compact">
+          <span>🫶</span><b>No crew members yet</b>
+          <p>Invite people to start organizing together.</p>
+        </div>
+        {% endfor %}
+      </article>
+
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">RECENT UPDATES</span>
+            <h3>Event activity</h3>
+          </div>
+          <button class="text-action" type="button" data-go-tab="activity">
+            Open feed →
+          </button>
+        </div>
+        {% for activity in event.activities|sort(attribute='created_at',
+        reverse=true) %} {% if loop.index <= 4 %}
+        <div class="activity-item">
+          <span class="activity-dot"></span>
+          <div>
+            <p>{{ activity.message }}</p>
+            <small
+              >{{ activity.created_at.strftime("%b %d, %Y · %I:%M %p") if
+              activity.created_at else "Time not recorded" }}</small
+            >
+          </div>
+        </div>
+        {% endif %} {% else %}
+        <div class="event-empty compact">
+          <span>✨</span><b>Your story starts here</b>
+          <p>Event updates will appear here when recorded by the backend.</p>
+        </div>
+        {% endfor %}
+      </article>
+    </div>
+  </section>
+
+  {# FINANCES #}
+  <section
+    class="event-panel"
+    id="panel-finances"
+    role="tabpanel"
+    data-panel="finances"
+    hidden
+  >
+    <div class="event-section-heading">
+      <div>
+        <span class="section-kicker">MONEY, MADE CLEAR</span>
+        <h2>Event finances</h2>
+        <p>
+          Budget, real costs, member contributions, and transfers are shown
+          separately.
+        </p>
+      </div>
+      {% if is_owner %}<button
+        class="btn btn-primary"
+        type="button"
+        data-open-modal="spending-modal"
+      >
+        ＋ Add spending</button
+      >{% endif %}
+    </div>
+
+    <div class="finance-summary-grid">
+      <article class="finance-summary">
+        <span>Allocated budget</span
+        ><strong>৳{{ "{:,.0f}".format(event.budget or 0) }}</strong
+        ><small>Event.budget</small>
+      </article>
+      <article class="finance-summary">
+        <span>Total expense</span
+        ><strong>৳{{ "{:,.0f}".format(event.calculate_expense) }}</strong
+        ><small>Products + All spendings + Events initial expense</small>
+      </article>
+      <article class="finance-summary">
+        <span>Remaining budget</span
+        ><strong
+          class="{{ 'money-negative' if event.remains < 0 else 'money-positive' }}"
+          >৳{{ "{:,.0f}".format(event.remains) }}</strong
+        ><small>Budget − calculated costs</small>
+      </article>
+      <article class="finance-summary">
+        <span>Events initial expense</span
+        ><strong>৳{{ "{:,.0f}".format(event.expense or 0) }}</strong
+        ><small>Also added in total calculated expense</small>
+      </article>
+    </div>
+
+    {% if is_owner %}
+    <article class="event-card finance-card">
+      <div class="event-card-heading">
+        <div>
+          <span class="section-kicker">MEMBER BREAKDOWN</span>
+          <h3>Who is responsible for what?</h3>
+        </div>
+        <span class="tiny-note"
+          >Crew amounts are not event purchase totals.</span
+        >
+      </div>
+      <div class="table-scroll">
+        <table class="event-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Role</th>
+              <th>Assigned expense</th>
+              <th>Assigned budget</th>
+              <th>Adjustments</th>
+              <th>Paid amount</th>
+              <th>Remaining balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for crew in event.crews %} {% set member_balance = crew.paid + crew.budget - crew.extra - crew.expense %}
+            <tr>
+              <td>
+                <div class="table-member">
+                  <span class="member-avatar"
+                    >{{ crew.user.name[:1]|upper }}</span
+                  ><span
+                    ><b>{{ crew.user.name }}</b
+                    ><small>{{ crew.user.email }}</small></span
+                  >
+                </div>
+              </td>
+              <td>{{ crew.role|title }}</td>
+              <td>৳{{ "{:,.0f}".format(crew.expense) }}</td>
+              <td>৳{{ "{:,.0f}".format(crew.budget) }}</td>
+              <td
+                class="{{ 'money-negative' if crew.extra > 0 else ('money-positive' if crew.extra < 0 else '') }}"
+              >
+                ৳{{ "{:,.0f}".format(crew.extra) }}
+              </td>
+              <td>৳{{ "{:,.0f}".format(crew.paid) }}</td>
+              <td
+                class="{{ 'money-negative' if member_balance < 0 else ('money-positive' if member_balance > 0 else '') }}"
+              >
+                ৳{{ "{:,.0f}".format(member_balance|abs) }}{% if member_balance
+                < 0 %} credit{% endif %}
+              </td>
+              <td>
+                <span
+                  class="member-status {{ 'is-paid' if crew.status == 'paid' else 'is-unpaid' }}"
+                  >{{ crew.status|title }}</span
+                >
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="table-empty">
+                No crew records are linked to this event yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="event-card-note">
+        Estimated balance = paid + budget - assigned expense - signed personal adjustments . Payment records are separate transactions and are listed
+        below; connect the backend to define how they reconcile.
+      </p>
+    </article>
+    {% elif my_crew %} {% set personal_balance = my_crew.paid + my_crew.budget
+    - my_crew.extra - my_crew.expense %}
+    <article class="event-card my-finance-card">
+      <div>
+        <span class="section-kicker">YOUR PERSONAL POSITION</span>
+        <h3>What your event card says</h3>
+        <p class="muted">
+          This estimate uses your Crew record, not a sum of payment
+          transactions.
+        </p>
+      </div>
+      <div
+        class="my-finance-number {{ 'money-negative' if personal_balance < 0 else ('money-positive' if personal_balance > 0 else '') }}"
+      >
+        ৳{{ "{:,.0f}".format(personal_balance|abs) }}<small>
+  {% if personal_balance > 0 %}remaining budget
+  {% elif personal_balance < 0 %}over budget
+  {% else %}budget fully used{% endif %}
+</small>
+      </div>
+      <div class="personal-mini-grid">
+        <div>
+          <small>Assigned expense</small
+          ><b>৳{{ "{:,.0f}".format(my_crew.expense) }}</b>
+        </div>
+        <div>
+          <small>Assigned budget</small
+          ><b>৳{{ "{:,.0f}".format(my_crew.budget) }}</b>
+        </div>
+        <div>
+          <small>Signed adjustments</small
+          ><b>৳{{ "{:,.0f}".format(my_crew.extra) }}</b>
+        </div>
+        <div>
+          <small>Paid amount</small><b>৳{{ "{:,.0f}".format(my_crew.paid) }}</b>
+        </div>
+      </div>
+    </article>
+    <article class="event-card">
+      <div class="event-card-heading">
+        <div>
+          <span class="section-kicker">YOUR ADJUSTMENTS</span>
+          <h3>Personal spending changes</h3>
+        </div>
+      </div>
+      {% for spending in my_crew.spendings %}
+      <div class="expense-list-row">
+        <span class="snapshot-icon snapshot-purple"
+          >{% if spending.type == 'increase' %}↗{% else %}↘{% endif %}</span
+        >
+        <div class="snapshot-copy">
+          <b>{{ spending.name }}</b><small>{{ spending.type|title }}</small>
+        </div>
+        <strong
+          class="{{ 'money-negative' if spending.type == 'increase' else 'money-positive' }}"
+          >{{ '+' if spending.type == 'increase' else '−' }}৳{{
+          "{:,.0f}".format(spending.cost) }}</strong
+        >
+      </div>
+      {% else %}
+      <div class="event-empty compact">
+        <span>🧮</span><b>No personal adjustments</b>
+        <p>Member-specific adjustments will appear here.</p>
+      </div>
+      {% endfor %}
+    </article>
+    {% else %}
+    <div class="event-card">
+      <div class="event-empty">
+        <span>🔒</span><b>No personal finance card is linked</b>
+        <p>
+          Once your membership is connected, your individual figures can appear
+          here.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="event-two-col">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">PURCHASES</span>
+            <h3>Products</h3>
+          </div>
+          {% if can_manage_products %}<button
+            class="btn btn-sm"
+            type="button"
+            data-open-modal="product-modal"
+          >
+            ＋ Product</button
+          >{% endif %}
+        </div>
+        {% for product in event.products %}
+        <div class="expense-list-row">
+          <span class="snapshot-icon snapshot-purple">🛍️</span>
+          <div class="snapshot-copy">
+            <b>{{ product.name }}</b
+            ><small
+              >{{ product.category|title }} · {{ product.quantity }} × ৳{{
+              "{:,.0f}".format(product.price) }}</small
+            >
+          </div>
+          <strong>৳{{ "{:,.0f}".format(product.total_price) }}</strong>
+        </div>
+        {% else %}
+        <div class="event-empty compact">
+          <span>🛍️</span><b>No products recorded</b>
+          <p>Products added for this event will appear here.</p>
+        </div>
+        {% endfor %}
+      </article>
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">OTHER COSTS</span>
+            <h3>General spending</h3>
+          </div>
+          {% if is_owner %}<button
+            class="btn btn-sm"
+            type="button"
+            data-open-modal="spending-modal"
+          >
+            ＋ Spending</button
+          >{% endif %}
+        </div>
+        {% for spending in event.spendings %}
+        <div class="expense-list-row">
+          <span class="snapshot-icon snapshot-orange">🧾</span>
+          <div class="snapshot-copy">
+            <b>{{ spending.name }}</b
+            ><small>{{ spending.description or "No description" }}</small>
+          </div>
+          <strong>৳{{ "{:,.0f}".format(spending.cost) }}</strong>
+        </div>
+        {% else %}
+        <div class="event-empty compact">
+          <span>🧾</span><b>No general spending yet</b>
+          <p>General event costs will appear here.</p>
+        </div>
+        {% endfor %}
+      </article>
+    </div>
+
+    <article class="event-card finance-card">
+      <div class="event-card-heading">
+        <div>
+          <span class="section-kicker">MONEY MOVEMENTS</span>
+          <h3>Payment history</h3>
+          <p>These are Payment records, separate from Crew.paid.</p>
+        </div>
+        {% if is_owner %}<button
+          class="btn btn-sm"
+          type="button"
+          data-open-modal="payment-modal"
+        >
+          ＋ Record payment</button
+        >{% endif %}
+      </div>
+      {% for payment in event.payments|sort(attribute='created_at',
+      reverse=true) %}
+      <div class="payment-row">
+        <div class="payment-icon">
+          {{ "✓" if payment.status == "completed" else ("…" if payment.status ==
+          "pending" else "×") }}
+        </div>
+        <div class="snapshot-copy">
+          <b
+            >{{ payment.sender.name }} <span class="muted">→</span> {{
+            payment.receiver.name }}</b
+          ><small
+            >{{ payment.created_at.strftime("%b %d, %Y · %I:%M %p") if
+            payment.created_at else "Date not recorded" }}</small
+          >
+        </div>
+        <div class="payment-right">
+          <strong>৳{{ "{:,.0f}".format(payment.amount) }}</strong
+          ><span class="payment-status payment-{{ payment.status }}"
+            >{{ payment.status|title }}</span
+          >
+        </div>
+      </div>
+      {% else %}
+      <div class="event-empty compact">
+        <span>💸</span><b>No payments recorded</b>
+        <p>Transfers connected to this event will appear here.</p>
+      </div>
+      {% endfor %}
+    </article>
+  </section>
+
+  {# CREW #}
+  <section
+    class="event-panel"
+    id="panel-crew"
+    role="tabpanel"
+    data-panel="crew"
+    hidden
+  >
+    <div class="event-section-heading">
+      <div>
+        <span class="section-kicker">THE PEOPLE BEHIND THE PLAN</span>
+        <h2>Your crew</h2>
+        <p>Roles help coordinate the event. They are not task assignments.</p>
+      </div>
+      {% if is_owner %}<button
+        class="btn btn-primary"
+        type="button"
+        data-open-modal="invite-modal"
+      >
+        ＋ Invite people</button
+      >{% endif %}
+    </div>
+    <div class="crew-grid">
+      {% for crew in event.crews %}
+      <article
+        class="crew-card {% if crew.user_id == current_user.id %}crew-card-me{% endif %}"
+      >
+        <div class="crew-card-head">
+          <div class="member-avatar member-avatar-large">
+            {{ crew.user.name[:1]|upper }}
+          </div>
+          <span
+            class="member-status {{ 'is-paid' if crew.status == 'paid' else 'is-unpaid' }}"
+            >{{ crew.status|title }}</span
+          >
+        </div>
+        <h3>
+          {{ crew.user.name }}{% if crew.user_id == current_user.id %}<span
+            class="you-pill"
+            >YOU</span
+          >{% endif %}
+        </h3>
+        <p class="crew-email">{{ crew.user.email }}</p>
+        <span class="role-chip role-{{ crew.role }}"
+          >{{ crew.role|title }}</span
+        >
+        <div class="crew-card-stats">
+          <div>
+            <small>Assigned expense</small
+            ><b>৳{{ "{:,.0f}".format(crew.expense) }}</b>
+          </div>
+          <div>
+            <small>Paid amount</small><b>৳{{ "{:,.0f}".format(crew.paid) }}</b>
+          </div>
+          <div class="crew-budget-stat">
+            <small>Personal budget</small>
+            <b>৳{{ "{:,.0f}".format(crew.budget or 0) }}</b>
+          </div>
+        </div>
+        <div class="crew-adjustment">
+          <span>Personal adjustments</span
+          ><b
+            class="{{ 'money-negative' if crew.extra > 0 else ('money-positive' if crew.extra < 0 else '') }}"
+            >৳{{ "{:,.0f}".format(crew.extra) }}</b
+          >
+        </div>
+        {% if is_owner %}
+        <div class="crew-admin-tools">
+          <button class="btn btn-block btn-sm" type="button"
+            data-open-modal="budget-modal"
+            data-member-id="{{ crew.id }}"
+            data-member-name="{{ crew.user.name }}"
+            data-member-budget="{{ crew.budget or 0 }}">
+            Set personal budget
+          </button>
+          <button class="btn btn-block btn-sm" type="button"
+            data-open-modal="crew-expense-modal"
+            data-member-id="{{ crew.id }}"
+            data-member-name="{{ crew.user.name }}">
+            ＋ Add expense for {{ 'you' if crew.user_id == current_user.id else crew.user.name }}
+          </button>
+          <form
+  class="role-change-form integration-form"
+  action="{{ url_for('main.change_role', event_id=event.id, crew_id=crew.id) }}"
+  method="POST"
+>
+            <input type="hidden" name="user_id" value="{{ crew.user_id }}">
+            <label for="crew-role-{{ crew.id }}">Crew role</label>
+            <select class="input" id="crew-role-{{ crew.id }}" name="role">
+              {% for role in ['organizer', 'treasurer', 'member'] %}
+              <option value="{{ role }}" {{ 'selected' if crew.role == role else '' }}>{{ role|title }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-block btn-sm" type="submit">Update role</button>
+          </form>
+          <button class="text-action" type="button"
+            data-open-modal="responsibility-modal"
+            data-member-id="{{ crew.id }}"
+            data-member-name="{{ crew.user.name }}">
+            Assign responsibility ↗
+          </button>
+        </div>
+        {% elif crew.user_id == current_user.id %}
+        <button class="btn btn-block btn-sm" type="button" data-open-modal="my-expense-modal">
+          ＋ Add my expense
+        </button>
+        <div class="crew-you-note">This is your crew card.</div>
+        {% endif %}
+      </article>
+      {% else %}
+      <div class="event-card event-empty">
+        <span>🫶</span><b>Your crew is waiting</b>
+        <p>Invite members to start planning and splitting event costs.</p>
+        {% if is_owner %}<button
+          class="btn btn-primary"
+          type="button"
+          data-open-modal="invite-modal"
+        >
+          Invite your first member</button
+        >{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="event-two-col">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">INVITATIONS</span>
+            <h3>Invitation status</h3>
+          </div>
+        </div>
+        {% for invitation in event.invitations|sort(attribute='created_at',
+        reverse=true) %}
+        <div class="mini-member">
+          <div class="member-avatar">{{ invitation.user.name[:1]|upper }}</div>
+          <div class="snapshot-copy">
+            <b>{{ invitation.user.name }}</b
+            ><small
+              >Invited by {{ invitation.sender.name }} · {{
+              invitation.created_at.strftime("%b %d, %Y") if
+              invitation.created_at else "Date not recorded" }}</small
+            >
+          </div>
+          <span
+            class="member-status {{ 'is-paid' if invitation.status == 'accepted' else 'is-unpaid' }}"
+            >{{ invitation.status|title }}</span
+          >
+        </div>
+        {% else %}
+        <div class="event-empty compact">
+          <span>📨</span><b>No invitations yet</b>
+          <p>Invitations will be listed here when the backend creates them.</p>
+        </div>
+        {% endfor %}
+      </article>
+      <article class="event-card responsibility-info">
+  <div class="event-card-heading">
+    <div>
+      <span class="section-kicker">RESPONSIBILITIES</span>
+      <h3>Who does what?</h3>
+    </div>
+    <span class="snapshot-icon snapshot-yellow">🧩</span>
+  </div>
+
+  <p>
+    Assign tasks to your crew members and keep track of their progress.
+  </p>
+
+  <div class="responsibility-board">
+    <div class="responsibility-board-head">
+      <b>Responsibilities I assigned</b>
+      <span class="you-pill" id="responsibility-count">
+        {{ event.responsibilities|length }} tasks
+      </span>
+    </div>
+
+    <div
+      class="responsibility-assignment-list"
+      id="responsibility-assignment-list"
+      aria-live="polite"
+    >
+      {% for responsibility in event.responsibilities %}
+        <div
+          class="responsibility-assignment"
+          data-responsibility-id="{{ responsibility.id }}"
+        >
+          <div class="responsibility-assignment-details">
+            <div class="event-card-heading">
+              <div>
+                <h4>{{ responsibility.title }}</h4>
+                <span class="section-kicker">
+                  TASK #{{ responsibility.id }}
+                </span>
+              </div>
+
+              <span class="you-pill">
+                {{ responsibility.status|replace('_', ' ')|title }}
+              </span>
+            </div>
+
+            <p>
+              {{ responsibility.description or "No description provided." }}
+            </p>
+
+           
+
+            <div class="role-explainer">
+              <span class="role-chip role-member">Assigned to</span>
+              <span>
+                {{ responsibility.crew.user.name }}
+              </span>
+            </div>
+
+
+            <div class="event-card-note">
+              Created
+              {{ responsibility.created_at.strftime("%d %b %Y, %I:%M %p") }}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div
+          class="event-empty compact responsibility-empty"
+          id="responsibility-empty"
+        >
+          <span>🧩</span>
+          <b>No assignments yet</b>
+          <p>Choose a crew member and assign them a responsibility.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="role-explainer">
+    <span class="role-chip role-organizer">Organizer</span>
+    <span>Helps coordinate the event.</span>
+  </div>
+
+  <div class="role-explainer">
+    <span class="role-chip role-treasurer">Treasurer</span>
+    <span>Helps track money.</span>
+  </div>
+
+  <div class="role-explainer">
+    <span class="role-chip role-member">Member</span>
+    <span>Participates in the event.</span>
+  </div>
+
+  {% if is_owner %}
+    <button
+      class="btn btn-block"
+      type="button"
+      data-open-modal="responsibility-modal"
+    >
+      ＋ Plan a responsibility
+    </button>
+  {% endif %}
+</article>
+    </div>
+  </section>
+
+  {# ACTIVITY #}
+  <section
+    class="event-panel"
+    id="panel-activity"
+    role="tabpanel"
+    data-panel="activity"
+    hidden
+  >
+    <div class="event-section-heading">
+      <div>
+        <span class="section-kicker">A SHARED MEMORY</span>
+        <h2>Activity & discussion</h2>
+        <p>Keep updates and conversations close to the event.</p>
+      </div>
+    </div>
+    <div class="event-two-col activity-layout">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">TIMELINE</span>
+            <h3>Event activity</h3>
+          </div>
+        </div>
+        <div class="activity-timeline">
+          {% for activity in event.activities|sort(attribute='created_at',
+          reverse=true) %}
+          <div class="timeline-row">
+            <span class="timeline-marker">✦</span>
+            <div>
+              <p>{{ activity.message }}</p>
+              <small
+                >{{ activity.created_at.strftime("%B %d, %Y at %I:%M %p") if
+                activity.created_at else "Time not recorded" }}</small
+              >
+            </div>
+          </div>
+          {% else %}
+          <div class="event-empty compact">
+            <span>🌱</span><b>Nothing here yet</b>
+            <p>Recorded event activity will show up in this timeline.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">SAY SOMETHING</span>
+            <h3>Discussion</h3>
+          </div>
+        </div>
+        <form class="integration-form" data-integration="comment">
+          <label for="event-comment">Add a comment</label>
+          <textarea
+            id="event-comment"
+            class="input event-textarea"
+            rows="3"
+            placeholder="Share an update with the crew…"
+            required
+          ></textarea>
+          <button class="btn btn-primary" type="submit">
+            Post comment <span>↗</span>
+          </button>
+          <p class="form-hint">
+            Frontend only — connect this form to your Comment model.
+          </p>
+        </form>
+        <div class="comment-list">
+          {% for comment in event.comments|sort(attribute='created_at',
+          reverse=true) %}
+          <div class="comment-item">
+            <div class="member-avatar">{{ comment.user.name[:1]|upper }}</div>
+            <div class="comment-content">
+              <div class="comment-byline">
+                <b>{{ comment.user.name }}</b
+                ><small
+                  >{{ comment.created_at.strftime("%b %d · %I:%M %p") if
+                  comment.created_at else "Just now" }}</small
+                >
+              </div>
+              <p>{{ comment.message }}</p>
+            </div>
+          </div>
+          {% else %}
+          <div class="event-empty compact">
+            <span>💬</span><b>Be the first to say something</b>
+            <p>Comments from your crew will appear here.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+    </div>
+  </section>
+
+  {# SETTINGS #} {% if is_owner %}
+  <section
+    class="event-panel"
+    id="panel-settings"
+    role="tabpanel"
+    data-panel="settings"
+    hidden
+  >
+    <div class="event-section-heading">
+      <div>
+        <span class="section-kicker">OWNER WORKSPACE</span>
+        <h2>Event settings</h2>
+        <p>
+          Review the event setup and connect these controls to your backend when
+          ready.
+        </p>
+      </div>
+    </div>
+    <div class="event-two-col">
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">EVENT DETAILS</span>
+            <h3>Basic information</h3>
+          </div>
+          <span class="snapshot-icon snapshot-purple">⚙️</span>
+        </div>
+        <form class="integration-form" action="{{url_for('main.update_event',event_id=event.id)}}" method="POST">
+          <label for="setting-name">Event name</label
+          ><input
+            class="input"
+            name="name"
+            id="setting-name"
+            value="{{ event.name }}"
+            maxlength="50"
+            required
+          />
+          <label for="setting-description">Description</label
+          ><textarea
+          name="description"
+            class="input event-textarea"
+            id="setting-description"
+            rows="3"
+          >
+{{ event.description or "" }}</textarea
+          >
+          <div class="form-two">
+            <div>
+              <label for="setting-budget">Budget (৳)</label
+              ><input
+                class="input"
+                name="budget"
+                id="setting-budget"
+                type="number"
+                min="0"
+                value="{{ event.budget }}"
+                required
+              />
+            </div>
+            
+          </div>
+          <div class="form-two">
+            <div>
+              <label for="setting-start">Start</label
+              ><input
+                class="input"
+                name="start"
+                id="setting-start"
+                type="datetime-local"
+                value="{{ event.start_at.strftime('%Y-%m-%dT%H:%M') if event.start_at else '' }}"
+              />
+            </div>
+            <div>
+              <label for="setting-end">End</label
+              ><input
+                class="input"
+                name="end"
+                id="setting-end"
+                type="datetime-local"
+                value="{{ event.end_at.strftime('%Y-%m-%dT%H:%M') if event.end_at else '' }}"
+              />
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Save changes</button>
+          <p class="form-hint">
+            No changes are saved until you connect a Flask route.
+          </p>
+        </form>
+      </article>
+      <article class="event-card">
+        <div class="event-card-heading">
+          <div>
+            <span class="section-kicker">OWNERSHIP</span>
+            <h3>Transfer event ownership</h3>
+          </div>
+          <span class="snapshot-icon snapshot-yellow">👑</span>
+        </div>
+        <p class="muted">
+          The current owner is <b>{{ event.created_by.name }}</b>. Ownership is
+          determined by <code>Event.created_by_id</code>; a crew role is not the
+          same thing as ownership.
+        </p>
+        <form class="integration-form"  action="{{url_for('main.transfer_ownership',event_id=event.id)}}" method="POST">
+          <label for="new-owner">Transfer to a crew member</label>
+          <select class="input" id="new-owner" name="selected_person" required>
+            <option value="">Choose a member…</option>
+            {% for crew in event.crews if crew.user_id != current_user.id %}
+            <option value={{ crew.user_id }}>
+              {{ crew.user.name }} · {{ crew.role|title }}
+            </option>
+            {% endfor %}
+          </select>
+          <button class="btn" type="submit">Review ownership transfer</button>
+          <p class="form-hint">
+            Backend integration needed: validate the selected member and update
+            ownership safely.
+          </p>
+        </form>
+        <div class="settings-warning">
+          <b>⚠️ Owner-only action</b>
+          <p>
+            Enforce ownership and permissions on the server. Hiding this tab is
+            only a presentation choice, not authorization.
+          </p>
+        </div>
+      </article>
+    </div>
+    <article class="event-card">
+      <div class="event-card-heading">
+        <div>
+          <span class="section-kicker">SCHEMA NOTE</span>
+          <h3>What this frontend does not assume</h3>
+        </div>
+      </div>
+      <div class="schema-note-grid">
+        <div>
+          <b>Tasks</b>
+          <p>No dedicated task model exists in the provided schema.</p>
+        </div>
+        <div>
+          <b>Payment notes</b>
+          <p>
+            Payment has amount, sender, receiver, status, event, and created_at
+            — no note field.
+          </p>
+        </div>
+        <div>
+          <b>Owner</b>
+          <p>
+            Event ownership is based on created_by_id; Crew.role contains
+            organizer, treasurer, and member.
+          </p>
+        </div>
+      </div>
+    </article>
+  </section>
+  {% endif %}
+</main>
+
+{# Frontend-only modals. Forms intentionally do not submit to a nonexistent
+route. #} {% if is_owner %}
+<div class="event-modal-backdrop" id="invite-modal" hidden>
+  <section
+    class="event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="invite-title"
+  >
+    <div class="event-modal-heading">
+      <div>
+        <span class="section-kicker">GROW YOUR CREW</span>
+        <h2 id="invite-title">Invite a member</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <form class="integration-form" data-integration="invite">
+      <label for="invite-user-id">User EMAIL</label
+      ><input
+        class="input"
+        id="invite-user-email"
+        type="email"
+        min="1"
+        placeholder="User ID from your database"
+        required
+      />
+      <p class="form-hint">
+        Invitation requires an existing User and an Invitation record. The
+        sender should be the current user.
+      </p>
+      <button class="btn btn-primary" type="submit">Create invitation</button>
+    </form>
+  </section>
+</div>
+
+<div class="event-modal-backdrop" id="budget-modal" hidden>
+  <section class="event-modal" role="dialog" aria-modal="true" aria-labelledby="budget-title">
+    <div class="event-modal-heading">
+      <div><span class="section-kicker">PERSONAL ALLOCATION</span><h2 id="budget-title">Set member budget</h2></div>
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form class="integration-form" data-integration="member-budget">
+      <input type="hidden" id="budget-member-id" name="user_id">
+      <p class="form-hint">Budget for <b id="budget-member-name">this member</b>. The amount is shown in green on their crew card.</p>
+      <label for="member-budget-amount">Budget (৳)</label>
+      <input class="input" id="member-budget-amount" name="budget" type="number" min="0" step="1" required>
+      <select id="budget-action">
+  <option value="add">Add budget</option>
+  <option value="deduct">Deduct budget</option>
+</select>
+      <button class="btn btn-primary" type="submit">Save budget</button>
+    </form>
+  </section>
+</div>
+
+<div class="event-modal-backdrop" id="crew-expense-modal" hidden>
+  <section class="event-modal" role="dialog" aria-modal="true" aria-labelledby="crew-expense-title">
+    <div class="event-modal-heading">
+      <div><span class="section-kicker">MEMBER SPENDING</span><h2 id="crew-expense-title">Add member expense</h2></div>
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form class="integration-form" data-integration="crew-expense">
+      <input type="hidden" id="crew-expense-member-id" name="user_id">
+      <p class="form-hint">Recording an expense for <b id="crew-expense-member-name">this member</b>.</p>
+      <label for="crew-expense-name">Expense name</label>
+      <input class="input" id="crew-expense-name" name="name" maxlength="50" placeholder="e.g. Bus ticket" required>
+      <label for="crew-expense-cost">Amount (৳)</label>
+      <input class="input" id="crew-expense-cost" name="cost" type="number" min="1" step="1" required>
+      <label for="crew-expense-type">Adjustment</label>
+      <select class="input" id="crew-expense-type" name="type">
+        <option value="increase">Increase their expense</option>
+        <option value="decrease">Decrease their expense</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Add member expense</button>
+      <p class="form-hint">Backend puzzle: find the member's Crew row, then create a Person_Spending row linked by crew_id.</p>
+    </form>
+  </section>
+</div>
+
+<div class="event-modal-backdrop" id="spending-modal" hidden>
+  <section
+    class="event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="spending-title"
+  >
+    <div class="event-modal-heading">
+      <div>
+        <span class="section-kicker">GENERAL EVENT COST</span>
+        <h2 id="spending-title">Add spending</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <form class="integration-form" data-integration="spending">
+      <label for="spending-name">Name</label
+      ><input
+        class="input"
+        id="spending-name"
+        maxlength="50"
+        placeholder="e.g. Venue booking"
+        required
+      />
+      <label for="spending-cost">Cost (৳)</label
+      ><input class="input" id="spending-cost" type="number" min="0" required />
+      <label for="spending-description">Description</label
+      ><textarea
+        class="input event-textarea"
+        id="spending-description"
+        rows="2"
+        placeholder="Optional details"
+      ></textarea>
+      <button class="btn btn-primary" type="submit">Add spending</button>
+    </form>
+  </section>
+</div>
+
+{% endif %}
+
+{% if can_manage_products %}
+<div class="event-modal-backdrop" id="product-modal" hidden>
+  <section
+    class="event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="product-title"
+  >
+    <div class="event-modal-heading">
+      <div>
+        <span class="section-kicker">PURCHASE TRACKER</span>
+        <h2 id="product-title">Add product</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <form class="integration-form" data-integration="product">
+      <label for="product-name">Product name</label
+      ><input class="input" id="product-name" maxlength="50" required />
+      <div class="form-two">
+        <div>
+          <label for="product-price">Unit price (৳)</label
+          ><input
+            class="input"
+            id="product-price"
+            type="number"
+            min="0"
+            required
+          />
+        </div>
+        <div>
+          <label for="product-quantity">Quantity</label
+          ><input
+            class="input"
+            id="product-quantity"
+            type="number"
+            min="0"
+            value="1"
+            required
+          />
+        </div>
+      </div>
+      <label for="product-category">Category</label
+      ><select class="input" id="product-category">
+        {% for category in
+        ["food","drinks","groceries","snacks","electronics","clothing","accessories","household","transport","entertainment","health","beauty","stationery","sports","other"]
+        %}
+        <option value="{{ category }}">{{ category|title }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Add product</button>
+    </form>
+  </section>
+</div>
+{% endif %}
+
+{% if is_owner %}
+<div class="event-modal-backdrop" id="payment-modal" hidden>
+  <section
+    class="event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payment-title"
+  >
+    <div class="event-modal-heading">
+      <div>
+        <span class="section-kicker">MONEY MOVEMENT</span>
+        <h2 id="payment-title">Record a payment</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <form class="integration-form" data-integration="payment">
+      <label for="payment-sender">Sender</label
+      ><select class="input" id="payment-sender" required>
+        <option value="">Choose sender…</option>
+        {% for crew in event.crews %}
+        <option value="{{ crew.user_id }}">{{ crew.user.name }}</option>
+        {% endfor %}
+      </select>
+      <label for="payment-receiver">Receiver</label
+      ><select class="input" id="payment-receiver" required>
+        <option value="">Choose receiver…</option>
+        {% for crew in event.crews %}
+        <option value="{{ crew.user_id }}">{{ crew.user.name }}</option>
+        {% endfor %}
+      </select>
+      <label for="payment-amount">Amount (৳)</label
+      ><input
+        class="input"
+        id="payment-amount"
+        type="number"
+        min="1"
+        required
+      />
+      <label for="payment-status">Status</label
+      ><select class="input" id="payment-status">
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Record payment</button>
+      <p class="form-hint">
+        The Payment model has no note field. The backend should decide how
+        completed payments affect balances.
+      </p>
+    </form>
+  </section>
+</div>
+
+<div class="event-modal-backdrop" id="responsibility-modal" hidden>
+  <section
+    class="event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="responsibility-title"
+  >
+    <div class="event-modal-heading">
+      <div>
+        <span class="section-kicker">CREW COORDINATION</span>
+        <h2 id="responsibility-title">Plan a responsibility</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+    <form class="integration-form" data-integration="responsibility">
+      <label for="responsibility-member">Crew member</label
+      ><select class="input" id="responsibility-member">
+        <option value="">Choose a member…</option>
+        {% for crew in event.crews %}
+        <option value="{{ crew.id }}">{{ crew.user.name }}</option>
+        {% endfor %}
+      </select>
+      <label for="responsibility-text">Responsibility</label
+      ><input
+        class="input"
+        id="responsibility-text"
+        placeholder="e.g. Arrange transport"
+        required
+      />
+      <label for="responsibility-description">Description</label
+      ><input
+        class="input"
+        id="responsibility-description"
+        placeholder="e.g. Arrange a car for rahim!"
+        required
+      />
+      <label for="responsibility-status">Status</label
+      ><select class="input" id="responsibility-status">
+        <option value="pending">Not started</option>
+  <option value="in_progress">In progress</option>
+  <option value="completed">Completed</option>
+      </select>
+      <button class="btn btn-primary" type="submit">
+        Save responsibility idea
+      </button>
+      <p class="form-hint">
+        Demo interface only. Your current models do not persist tasks or task
+        statuses.
+      </p>
+    </form>
+  </section>
+</div>
+{% endif %}
+
+{% if my_crew %}
+<div class="event-modal-backdrop" id="my-expense-modal" hidden>
+  <section class="event-modal" role="dialog" aria-modal="true" aria-labelledby="my-expense-title">
+    <div class="event-modal-heading">
+      <div><span class="section-kicker">YOUR SPENDING</span><h2 id="my-expense-title">Add my expense</h2></div>
+      <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form class="integration-form" data-integration="my-expense">
+      <label for="my-expense-name">Expense name</label>
+      <input class="input" id="my-expense-name" name="name" maxlength="50" placeholder="e.g. Snacks I bought" required>
+      <label for="my-expense-cost">Amount (৳)</label>
+      <input class="input" id="my-expense-cost" name="cost" type="number" min="1" step="1" required>
+      <label for="my-expense-type">Adjustment</label>
+      <select class="input" id="my-expense-type" name="type">
+        <option value="increase">Increase my expense</option>
+        <option value="decrease">Decrease my expense</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Save my expense</button>
+      <p class="form-hint">Backend puzzle: use the logged-in user's Crew row. Never trust a client-supplied user ID for this form.</p>
+    </form>
+  </section>
+</div>
+{% endif %}
+
+<div
+  class="event-toast"
+  id="event-toast"
+  role="status"
+  aria-live="polite"
+  hidden
+></div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/event.js') }}"></script>
+{% endblock %}

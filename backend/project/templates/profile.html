@@ -1,0 +1,189 @@
+{% extends "base.html" %} {% set active_page = "profile" %} {% block title %}My
+Profile{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/profile.css') }}"
+/>
+<main class="main profile-page">
+  <div class="page-head">
+    <div>
+      <h1>My <span class="hl">profile</span> 👋</h1>
+      <p class="muted">Your account information and expense overview.</p>
+    </div>
+  </div>
+
+  <!-- Profile header -->
+  <section class="card profile-hero">
+    <div class="profile-avatar">
+      {{ current_user.name.split()[:2] | map('first') | join | upper }}
+    </div>
+
+    <div class="profile-identity">
+      <h2>{{ current_user.name }}</h2>
+      <p class="muted">{{ current_user.email }}</p>
+
+      <div class="profile-tags">
+        <span
+          class="badge {% if current_user.role == 'root' %}b-warn {% elif current_user.role == 'admin' %}b-green {% endif %}"
+        >
+          {{ current_user.role | upper }}
+        </span>
+
+        <span
+          class="badge {% if current_user.status == 'active' %}b-green {% else %}b-red{% endif %}"
+        >
+          {{ current_user.status | upper }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Expense overview -->
+  <h2 class="section-title">Your expense overview</h2>
+
+  <section class="grid profile-stats">
+    <article class="card c-lilac">
+      <span class="stat-label">Events joined</span>
+      <div class="stat-value">{{ current_user.count_event }}</div>
+    </article>
+
+    <article class="card c-mint">
+      <span class="stat-label">Total paid</span>
+      <div class="stat-value">
+        ৳{{ "{:,.2f}".format(current_user.paid | float) }}
+      </div>
+    </article>
+
+    <article class="card c-peach">
+      <span class="stat-label">Amount owed</span>
+      <div class="stat-value">
+        ৳{{ "{:,.2f}".format(current_user.owe | float) }}
+      </div>
+    </article>
+
+    <article class="card c-lemon">
+      <span class="stat-label">Pending invitations</span>
+      <div class="stat-value">{{ current_user.count_invitation }}</div>
+    </article>
+  </section>
+
+  <!-- Account information -->
+
+  <!-- Edit profile button -->
+  <div class="profile-footer">
+    <button
+      type="button"
+      class="btn btn-primary"
+      onclick="toggleProfileEdit(true)"
+    >
+      ✏️ Edit profile
+    </button>
+  </div>
+
+  <!-- Flask feedback messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %}
+  <div class="profile-messages">
+    {% for category, message in messages %}
+    <div class="card profile-message {{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %} {% endwith %}
+
+  <!-- Account information -->
+  <h2 class="section-title">Account information</h2>
+
+  <section class="card profile-details">
+    <!-- Read-only view -->
+    <div id="profileView">
+      <div class="profile-detail-row">
+        <span class="muted">Full name</span>
+        <strong>{{ current_user.name }}</strong>
+      </div>
+
+      <div class="profile-detail-row">
+        <span class="muted">Email address</span>
+        <strong class="profile-email">{{ current_user.email }}</strong>
+      </div>
+
+      <div class="profile-detail-row">
+        <span class="muted">Account role</span>
+        <strong>{{ current_user.role | title }}</strong>
+      </div>
+
+      <div class="profile-detail-row">
+        <span class="muted">Member since</span>
+        <strong>
+          {% if current_user.created_at %} {{
+          current_user.created_at.strftime("%d %b %Y") }} {% else %} Not
+          available {% endif %}
+        </strong>
+      </div>
+    </div>
+
+    <!-- Edit form -->
+    <form
+      id="profileEdit"
+      method="POST"
+      action="{{ url_for('main.profile') }}"
+      class="hide"
+    >
+      <div class="field">
+        <label for="name">Full name</label>
+        <input
+          class="input"
+          id="name"
+          name="name"
+          type="text"
+          maxlength="50"
+          value="{{ request.form.get('name', current_user.name) }}"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input
+          class="input"
+          id="email"
+          name="email"
+          type="email"
+          maxlength="254"
+          value="{{ request.form.get('email', current_user.email) }}"
+          required
+        />
+      </div>
+
+      <p class="muted small mb">
+        Your role and account status cannot be changed here.
+      </p>
+
+      <div class="row wrap">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          onclick="toggleProfileEdit(false)"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <div class="profile-footer">
+    {%if current_user.is_authenticated%}
+    <a class="btn btn-sm nav-logout" href="{{ url_for('auth.logout') }}"
+      >Log out</a
+    >
+    {%endif%}
+    <a href="{{ url_for('main.events') }}" class="btn btn-primary">
+      View my events →
+    </a>
+  </div>
+</main>
+
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

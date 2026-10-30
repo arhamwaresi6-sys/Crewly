@@ -1,0 +1,68 @@
+{% extends "base.html" %} {% block title %}Log in{% endblock %} {% block nav
+%}{% endblock %} {# no navbar on the login page #} {% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <div class="auth-mascot">{% include '_mascot.html' %}</div>
+    <h2 id="title">Welcome back</h2>
+    <p class="muted">Log in with your Gmail to continue.</p>
+
+    <div class="tabs" style="justify-content: center">
+      <button class="chip active" id="tabLogin" onclick="setMode('login')">
+        Log in
+      </button>
+      <button class="chip" id="tabSignup" onclick="setMode('signup')">
+        Sign up
+      </button>
+    </div>
+
+    <form id="authForm">
+      <div class="field hide" id="nameField">
+        <label>Full name</label
+        ><input class="input" id="fullName" placeholder="Your name" />
+      </div>
+      <div class="field">
+        <label>Gmail</label
+        ><input
+          class="input"
+          id="email"
+          type="email"
+          placeholder="you@gmail.com"
+          required
+        />
+      </div>
+      <div class="field">
+        <label>Password</label
+        ><input
+          class="input"
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          required
+          minlength="6"
+        />
+      </div>
+      <button
+        class="btn btn-primary"
+        style="width: 100%"
+        id="submitBtn"
+        type="submit"
+      >
+        Log in
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+    {# BACKEND (optional): Google sign-in -> point this to your /auth/google
+    route #}
+    <div class="btn" style="width: 100%" id="error-container">
+      Your people. Your plans. Your money.
+    </div>
+
+    <p class="small muted" style="text-align: center; margin-top: 18px">
+      <a href="{{ url_for('main.index') }}"><b>← Back to home</b></a>
+    </p>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

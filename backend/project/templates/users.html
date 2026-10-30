@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% set active_page = 'users' %} {% block title
+%}Users{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/users.css') }}"
+/>
+<main class="main">
+  <div class="page-head">
+    <div>
+      <h1>All <span class="hl">users</span></h1>
+      <p class="muted" id="count">Everyone using SplitWise+</p>
+    </div>
+    <input
+      class="input search"
+      id="q"
+      placeholder="🔍 Search name or Gmail…"
+      oninput="searchUser()"
+    />
+  </div>
+  <section class="grid cards three" id="list"></section>
+</main>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,149 @@
+/* ---------- Friends page fixes ---------- */
+
+.friends-page {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+  min-width: 0;
+}
+
+.friends-page > .friends-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 22px;
+  position: relative;
+}
+
+/* Reset the global section-title spacing inside cards */
+.friends-card .section-title {
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Search input and button */
+.friends-card .friend-search {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 20px;
+}
+
+.friends-card .friend-search input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.friends-card .friend-search button {
+  flex: 0 0 auto;
+}
+
+/* User and friend rows */
+.friends-card .friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.friends-card .friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.friends-card .friend-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.friends-card .friend-info > div:last-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.friends-card .friend-info strong,
+.friends-card .friend-info p {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.friends-card .friend-info p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.friends-card .friend-row form {
+  flex: 0 0 auto;
+}
+
+.friends-card .friend-row button {
+  white-space: nowrap;
+}
+
+/* Empty states and flash messages */
+.friends-card .empty {
+  padding: 22px 10px;
+  text-align: center;
+}
+
+.friends-page .friend-message {
+  width: 100%;
+  margin: 0;
+}
+
+/* Mobile layout */
+@media (max-width: 600px) {
+  .friends-page {
+    gap: 24px;
+  }
+
+  .friends-page > .friends-card {
+    padding: 16px;
+  }
+
+  .friends-card .friend-search {
+    flex-direction: column;
+  }
+
+  .friends-card .friend-search button {
+    width: 100%;
+  }
+
+  .friends-card .friend-row {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .friends-card .friend-info {
+    gap: 8px;
+  }
+
+  .friends-card .friend-row button {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+}

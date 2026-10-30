@@ -1,0 +1,256 @@
+{% extends "base.html" %} {% set active_page = 'events' %} {% block title
+%}Events{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/events.css') }}"
+/>
+<main class="main">
+  <div class="page-head">
+    <div>
+      <h1>Your <span class="hl">events</span></h1>
+      <p class="muted">Click a card to open its dashboard.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreate()">
+      ＋ Create event
+    </button>
+  </div>
+
+  <div class="row wrap mb">
+    <input
+      class="input search"
+      id="q"
+      placeholder="🔍 Search events…"
+      oninput="draw()"
+    />
+    <div class="chips">
+      <button class="chip active" data-f="all" onclick="setFilter(this)">
+        All
+      </button>
+      <button class="chip" data-f="completed" onclick="setFilter(this)">
+        Completed
+      </button>
+      <button class="chip" data-f="ongoing" onclick="setFilter(this)">
+        Ongoing
+      </button>
+      <button class="chip" data-f="upcoming" onclick="setFilter(this)">
+        Upcoming
+      </button>
+      <button class="chip" data-f="cancelled" onclick="setFilter(this)">
+        cancelled
+      </button>
+    </div>
+  </div>
+
+  <section class="grid cards" id="list">
+    {%for event in events%}
+    <a
+      class="card event-card"
+      href="{{url_for('main.event',event_id = event.id)}}"
+      id="event"
+      data-name="{{event.name}}"
+      data-status="{{event.status}}"
+    >
+      <div class="row">
+        <div class="emoji">
+          {% if event.category == 'birthday' %}🎂 {% elif event.category ==
+          'housing' %}🏠 {% elif event.category == 'dinner' %}🍽️ {% elif
+          event.category == 'lunch' %}🥗 {% elif event.category == 'trip' %}✈️
+          {% elif event.category == 'party' %}🎉 {% elif event.category ==
+          'wedding' %}💍 {% elif event.category == 'graduation' %}🎓 {% elif
+          event.category == 'movie' %}🎬 {% elif event.category == 'sports' %}⚽
+          {% elif event.category == 'study' %}📚 {% elif event.category ==
+          'shopping' %}🛍️ {% elif event.category == 'festival' %}🎊 {% else %}🤝
+          {% endif %}
+        </div>
+        <div style="flex: 1; min-width: 0">
+          <b>{{event.name}}</b>
+          <div class="muted small">{{event.category}}· {{event.start_at}}</div>
+        </div>
+        <span
+          class="badge {%if event.status == 'completed'%}b-green{%elif event.status == 'cancelled'%}b-red{event.status == 'ongoing'%}b-warn{else}b-blue{%endif%}"
+          >{{event.status}}</span
+        >
+      </div>
+      <div class="row between dash-top">
+        <div class="avatar-stack">
+          {% for crew in event.crews[:4] %}
+          <div
+            class="avatar sm"
+            style="--c: {{ ['#c9b6ff', '#bfe3ff', '#fff0a8', '#ffc9e3', '#bff0d8', '#ffd3b8', '#d5c5ff', '#a9ddff'][loop.index0 % 8] }}"
+            title="{{ crew.user.name }}"
+          >
+            {{ crew.user.name.split() | map('first') | join | upper }}
+          </div>
+          {% endfor %} {% if event.crews|length > 4 %}
+          <div class="avatar sm" style="--c: #e3d7ff">
+            +{{ event.crews|length - 4 }}
+          </div>
+          {% endif %}
+        </div>
+        <div style="text-align: right">
+          <div class="big">৳ {{event.expense}}</div>
+        </div>
+      </div>
+      {%if current_user.id == event.created_by_id%}<span
+        class="badge b-warn"
+        style="margin-top: 12px"
+        >⭐ You are the owner</span
+      >{%endif%}
+    </a>
+    {%else%}
+    <div class="card empty" style="grid-column: 1/-1">No events found.</div>
+    {%endfor%}
+  </section>
+</main>
+
+<!-- ================= CREATE EVENT (popup) ================= -->
+<div class="modal-backdrop" id="createModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Create event ✨</h2>
+      <button class="close" onclick="closeModal('createModal')">×</button>
+    </div>
+
+    <div class="field">
+      <label>Event name</label
+      ><input class="input" id="evTitle" placeholder="e.g. Weekend trip" />
+    </div>
+
+    <div class="field">
+      <label>Category</label>
+      <select class="input" id="evCat">
+        <option value="birthday">Birthday</option>
+        <option value="housing">Housing</option>
+        <option value="hangout">Hangout</option>
+        <option value="dinner">Dinner</option>
+        <option value="lunch">Lunch</option>
+        <option value="trip">Trip</option>
+        <option value="party">Party</option>
+        <option value="wedding">Wedding</option>
+        <option value="graduation">Graduation</option>
+        <option value="movie">Movie</option>
+        <option value="sports">Sports</option>
+        <option value="study">Study</option>
+        <option value="shopping">Shopping</option>
+        <option value="festival">Festival</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="two">
+      <div class="field">
+        <label>Starting Date</label
+        ><input class="input" type="date" id="evStartDate" />
+      </div>
+      <div class="field">
+        <label>Ending Date</label
+        ><input class="input" type="date" id="evEndDate" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Initial total expense</label
+      ><input
+        class="input"
+        type="number"
+        min="0"
+        id="evTotal"
+        placeholder="0"
+        oninput="preview()"
+      />
+    </div>
+    <div class="field">
+      <label>Budget limit (optional)</label
+      ><input
+        class="input"
+        type="number"
+        min="0"
+        id="evBudget"
+        placeholder="e.g. 30000"
+      />
+    </div>
+
+    <div class="field">
+      <label>Invite people</label>
+      <div class="row" style="gap: 8px">
+        <input
+          class="input"
+          id="inviteSearch"
+          placeholder="Type a Gmail…"
+          oninput="searchUsers()"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="btn"
+          style="white-space: nowrap"
+          onclick="openFriendModal()"
+        >
+          👥 Add friends
+        </button>
+      </div>
+      <div id="suggest" class="suggest hide"></div>
+      <div class="chips" id="invitedChips" style="margin-top: 8px"></div>
+    </div>
+
+    <div class="card c-mint" style="box-shadow: none">
+      <div class="row between">
+        <span>Members (including you)</span><b id="pvMembers">1</b>
+      </div>
+      <div class="row between" style="margin-top: 6px">
+        <span>Each person pays</span><b class="up" id="pvShare">৳0</b>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      style="width: 100%; margin-top: 18px"
+      onclick="submitEvent()"
+    >
+      Create event
+    </button>
+  </div>
+</div>
+<!-- Friend selection popup -->
+<div class="modal-backdrop" id="friendModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>👥 Add friends</h2>
+      <button type="button" class="close" onclick="closeFriendModal()">
+        ×
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Search friends</label>
+      <input
+        class="input"
+        id="friendSearch"
+        placeholder="Search by name or Gmail..."
+        oninput="filterFriends()"
+        autocomplete="off"
+      />
+    </div>
+
+    <div id="friendList" class="friend-list">
+      <!-- JavaScript renders friends here -->
+    </div>
+
+    <div class="row between" style="margin-top: 16px">
+      <span class="muted small">Selected friends</span>
+      <b id="friendSelectedCount">0</b>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      style="width: 100%; margin-top: 16px"
+      onclick="confirmFriends()"
+    >
+      Add selected friends
+    </button>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/events.js') }}"></script>
+{% endblock %}

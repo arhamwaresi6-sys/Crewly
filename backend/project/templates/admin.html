@@ -1,0 +1,369 @@
+{% extends "base.html" %} {% block title %}Admin Panel | SplitWise+{% endblock
+%} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin.css') }}"
+/>
+<div class="admin-page">
+  <header class="admin-header">
+    <div>
+      <span class="admin-eyebrow">SPLITWISE+ / CONTROL CENTER</span>
+      <h1>Admin Dashboard</h1>
+      <p>Manage users, events, and platform announcements.</p>
+    </div>
+
+    <div class="admin-header-user">
+      <span class="admin-avatar"> {{ current_user.name[:1]|upper }} </span>
+      <div>
+        <strong>{{ current_user.name }}</strong>
+        <small>{{ current_user.role|capitalize }}</small>
+      </div>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %}
+  <div class="admin-flashes">
+    {% for category, message in messages %}
+    <div class="admin-flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %} {% endwith %} {% set stats = admin_data.stats %}
+
+  <section class="admin-stats">
+    <article class="admin-stat stat-lilac">
+      <span class="admin-stat-icon">👥</span>
+      <span class="admin-stat-label">Total users</span>
+      <strong>{{ stats.users }}</strong>
+    </article>
+
+    <article class="admin-stat stat-sky">
+      <span class="admin-stat-icon">🎉</span>
+      <span class="admin-stat-label">Total events</span>
+      <strong>{{ stats.events }}</strong>
+    </article>
+
+    <article class="admin-stat stat-mint">
+      <span class="admin-stat-icon">⚡</span>
+      <span class="admin-stat-label">Active events</span>
+      <strong>{{ stats.active_events }}</strong>
+    </article>
+  </section>
+
+  <nav class="admin-tabs" aria-label="Admin sections">
+    <button class="admin-tab active" data-tab="overview">Overview</button>
+    <button class="admin-tab" data-tab="users">Users</button>
+    <button class="admin-tab" data-tab="events">Events</button>
+    <button class="admin-tab" data-tab="announcements">Announcements</button>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <section class="admin-section" id="section-overview">
+    <div class="admin-section-heading">
+      <div>
+        <h2>Platform overview</h2>
+        <p>A quick look at what's happening.</p>
+      </div>
+    </div>
+
+    <div class="admin-overview-grid">
+      <article class="admin-card">
+        <div class="admin-card-heading">
+          <h3>Recent users</h3>
+          <button class="admin-text-btn" data-open-tab="users">
+            View all →
+          </button>
+        </div>
+
+        {% if admin_data.users %}
+        <div class="admin-list">
+          {% for user in admin_data.users[:5] %}
+          <div class="admin-list-row">
+            <span class="admin-avatar small"> {{ user.name[:1]|upper }} </span>
+            <div class="admin-grow">
+              <strong>{{ user.name }}</strong>
+              <small>{{ user.email }}</small>
+            </div>
+            <span
+              class="admin-badge {{ 'badge-danger' if user.status == 'banned' else 'badge-success' }}"
+            >
+              {{ user.status }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="admin-empty">No users found.</div>
+        {% endif %}
+      </article>
+
+      <article class="admin-card">
+        <div class="admin-card-heading">
+          <h3>Recent events</h3>
+          <button class="admin-text-btn" data-open-tab="events">
+            View all →
+          </button>
+        </div>
+
+        {% if admin_data.events %}
+        <div class="admin-list">
+          {% for event in admin_data.events[:5] %}
+          <div class="admin-list-row">
+            <span class="admin-list-icon">🎉</span>
+            <div class="admin-grow">
+              <strong>{{ event.name }}</strong>
+              <small>By {{ event.owner_name }}</small>
+            </div>
+            <span class="admin-badge"> {{ event.status }} </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="admin-empty">No events found.</div>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+
+  <!-- USERS -->
+  <section class="admin-section hidden" id="section-users">
+    <div class="admin-section-heading">
+      <div>
+        <h2>User management</h2>
+        <p>Search, ban, activate, or delete user accounts.</p>
+      </div>
+
+      <input
+        type="search"
+        class="admin-search"
+        id="userSearch"
+        placeholder="Search users..."
+      />
+    </div>
+
+    <div class="admin-card admin-table-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="usersTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for user in admin_data.users %}
+            <tr data-user-row>
+              <td>
+                <strong>{{ user.name }}</strong>
+                <small class="admin-cell-sub">#{{ user.id }}</small>
+              </td>
+
+              <td>{{ user.email }}</td>
+
+              <td>
+                <span class="admin-badge"> {{ user.role }} </span>
+              </td>
+
+              <td>
+                <span
+                  class="admin-badge {{ 'badge-danger' if user.status == 'banned' else 'badge-success' }}"
+                >
+                  {{ user.status }}
+                </span>
+              </td>
+
+              <td>{{ user.joined }}</td>
+
+              <td>
+                {% if user.role != 'root' and user.id != current_user.id %}
+                <div class="admin-actions">
+                  {% if current_user.role == 'root' %}
+                  <button
+                    class="admin-btn admin-btn-small admin-btn-primary"
+                    data-change-role="{{ user.id }}"
+                    data-next-role="{{ 'user' if user.role == 'admin' else 'admin' }}"
+                  >
+                    {{ 'Demote' if user.role == 'admin' else 'Promote' }}
+                  </button>
+                  {% endif %}
+
+                  <button
+                    class="admin-btn admin-btn-small
+                {{ 'admin-btn-success' if user.status == 'banned' else 'admin-btn-warning' }}"
+                    data-user-status="{{ user.id }}"
+                    data-next-status="{{ 'active' if user.status == 'banned' else 'banned' }}"
+                  >
+                    {{ 'Activate' if user.status == 'banned' else 'Ban' }}
+                  </button>
+
+                  <button
+                    class="admin-btn admin-btn-small admin-btn-danger"
+                    data-delete-user="{{ user.id }}"
+                  >
+                    Delete
+                  </button>
+                </div>
+                {% else %}
+                <span class="admin-muted">Protected</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="admin-empty">No users available.</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVENTS -->
+  <section class="admin-section hidden" id="section-events">
+    <div class="admin-section-heading">
+      <div>
+        <h2>Event management</h2>
+        <p>Review and manage events created on the platform.</p>
+      </div>
+    </div>
+
+    <div class="admin-card admin-table-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Owner</th>
+              <th>Members</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for event in admin_data.events %}
+            <tr>
+              <td>
+                <strong>{{ event.name }}</strong>
+                <small class="admin-cell-sub">#{{ event.id }}</small>
+              </td>
+
+              <td>{{ event.owner_name }}</td>
+              <td>{{ event.member_count }}</td>
+              <td>৳{{ "{:,.0f}".format(event.budget or 0) }}</td>
+
+              <td>
+                <span class="admin-badge">{{ event.status }}</span>
+              </td>
+
+              <td>
+                <div class="admin-actions">
+                  <a
+                    class="admin-btn admin-btn-small"
+                    href="{{ url_for('main.event', event_id=event.id) }}"
+                  >
+                    View
+                  </a>
+
+                  <button
+                    class="admin-btn admin-btn-small admin-btn-danger"
+                    data-delete-event="{{ event.id }}"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="admin-empty">No events available.</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANNOUNCEMENTS -->
+  <section class="admin-section hidden" id="section-announcements">
+    <div class="admin-section-heading">
+      <div>
+        <h2>Announcements</h2>
+        <p>Send a notification to all registered users.</p>
+      </div>
+    </div>
+
+    <div class="admin-card admin-announcement-card">
+      <form id="announcementForm">
+        <label for="announcementText">Announcement message</label>
+
+        <textarea
+          id="announcementText"
+          name="text"
+          class="admin-input admin-textarea"
+          maxlength="2000"
+          placeholder="Write something important..."
+          required
+        ></textarea>
+
+        <div class="admin-form-footer">
+          <small>Maximum 2000 characters.</small>
+          <button class="admin-btn admin-btn-primary" type="submit">
+            Send announcement →
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- REPORTS -->
+  <section class="admin-section hidden" id="section-reports">
+    <div class="admin-section-heading">
+      <div>
+        <h2>Reports</h2>
+        <p>Review reports submitted by users.</p>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-empty">
+        Reports are not connected yet. Your current models do not include a
+        Report model, so this section needs backend support before it can work.
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="admin-section hidden" id="section-settings">
+    <div class="admin-section-heading">
+      <div>
+        <h2>Platform settings</h2>
+        <p>Configure global platform behavior.</p>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-empty">
+        Persistent settings are not connected yet. A Setting model and
+        corresponding API route are needed to save these values.
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="admin-toast-container" id="adminToastContainer"></div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+{% endblock %}
