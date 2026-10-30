@@ -30,3 +30,4 @@ __pycache__/
 /backend/.coverage
 /backend/htmlcov/
 frontend/
+backend.zip
