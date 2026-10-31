@@ -2,7 +2,7 @@
 {% set active_page = "events" %} 
 {% block title %}{{event.name }}{% endblock %} 
 {% block content %} 
-{% set is_owner = event.created_by_id == current_user.id %} 
+{% set is_owner = page_user and event.created_by_id == page_user.id %}
 {% set can_manage_products = is_owner or (my_crew and my_crew.role == "treasurer") %} 
 {% set balance = (my_crew.expense +  my_crew.extra - my_crew.paid) if my_crew else 0 %} 
 {% set category_icons = {
@@ -16,7 +16,7 @@
   href="{{ url_for('static', filename='css/event.css') }}"
 />
 
-<main class="main event-page" id="eventPage" data-event-id="{{ event.id }}" data-current-user="{{ current_user.name }}">
+<main class="main event-page" id="eventPage" data-event-id="{{ event.id }}" data-current-user="{{ page_user.name if page_user else 'Guest' }}">
   <a class="back event-back" href="{{ url_for('main.events') }}"
     >← All events</a
   >
@@ -248,9 +248,9 @@
         {% if my_crew %} {% set personal_balance = my_crew.paid + my_crew.budget - my_crew.expense -
         my_crew.extra %}
         <div class="personal-card-top">
-          <div class="personal-avatar">{{ current_user.name[:1]|upper }}</div>
+          <div class="personal-avatar">{{ page_user.name[:1]|upper if page_user else 'G' }}</div>
           <div class="snapshot-copy">
-            <b>{{ current_user.name }}</b
+            <b>{{ page_user.name if page_user else 'Guest' }}</b
             ><small
               >{{ my_crew.role|title }} · {{ my_crew.status|title }}</small
             >
@@ -315,7 +315,7 @@
           <div class="member-avatar">{{ crew.user.name[:1]|upper }}</div>
           <div class="snapshot-copy">
             <b
-              >{{ crew.user.name }}{% if crew.user_id == current_user.id %}
+              >{{ crew.user.name }}{% if page_user and crew.user_id == page_user.id %}
               <span class="muted">(you)</span>{% endif %}</b
             ><small>{{ crew.role|title }}</small>
           </div>
@@ -706,7 +706,7 @@
     <div class="crew-grid">
       {% for crew in event.crews %}
       <article
-        class="crew-card {% if crew.user_id == current_user.id %}crew-card-me{% endif %}"
+        class="crew-card {% if page_user and crew.user_id == page_user.id %}crew-card-me{% endif %}"
       >
         <div class="crew-card-head">
           <div class="member-avatar member-avatar-large">
@@ -718,7 +718,7 @@
           >
         </div>
         <h3>
-          {{ crew.user.name }}{% if crew.user_id == current_user.id %}<span
+          {{ crew.user.name }}{% if page_user and crew.user_id == page_user.id %}<span
             class="you-pill"
             >YOU</span
           >{% endif %}
@@ -760,7 +760,7 @@
             data-open-modal="crew-expense-modal"
             data-member-id="{{ crew.id }}"
             data-member-name="{{ crew.user.name }}">
-            ＋ Add expense for {{ 'you' if crew.user_id == current_user.id else crew.user.name }}
+            ＋ Add expense for {{ 'you' if page_user and crew.user_id == page_user.id else crew.user.name }}
           </button>
           <form
   class="role-change-form integration-form"
@@ -783,7 +783,7 @@
             Assign responsibility ↗
           </button>
         </div>
-        {% elif crew.user_id == current_user.id %}
+        {% elif page_user and crew.user_id == page_user.id %}
         <button class="btn btn-block btn-sm" type="button" data-open-modal="my-expense-modal">
           ＋ Add my expense
         </button>
@@ -1143,7 +1143,7 @@
           <label for="new-owner">Transfer to a crew member</label>
           <select class="input" id="new-owner" name="selected_person" required>
             <option value="">Choose a member…</option>
-            {% for crew in event.crews if crew.user_id != current_user.id %}
+            {% for crew in event.crews if not page_user or crew.user_id != page_user.id %}
             <option value={{ crew.user_id }}>
               {{ crew.user.name }} · {{ crew.role|title }}
             </option>

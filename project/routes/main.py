@@ -35,13 +35,12 @@ def admin():
 
     return render_template("admin.html", admin_data=admin_data)
 @main.route("/community")
-@login_required
 def community():
     users = db.session.execute(
         db.select(User).order_by(User.name)
     ).scalars().all()
 
-    community_users = [
+    community_data = [
         {
             "id": user.id,
             "name": user.name,
@@ -53,7 +52,8 @@ def community():
 
     return render_template(
         "community.html",
-        users=community_users
+        users=users,
+        community_data=community_data
     )
 @main.route("/profile", methods=["GET", "POST"])
 @login_required
@@ -91,25 +91,27 @@ def profile():
     return render_template("profile.html")
 @main.route("/dashboard")
 def dashboard():
+  # Public demo browsing uses the seeded demo account; writes still require login.
+  page_user = current_user if current_user.is_authenticated else db.session.get(User, 60001)
   active_event = []
   pending_invitations=[]
   total_spendings=0
   spendings = []
   activities = []
-  if current_user.is_authenticated:
+  if page_user:
     activities = db.session.execute(
-       db.select(Activity).join(Event,Event.id==Activity.event_id).join(Crew,Event.id==Crew.event_id).where(Crew.user_id==current_user.id).limit(5)
+       db.select(Activity).join(Event,Event.id==Activity.event_id).join(Crew,Event.id==Crew.event_id).where(Crew.user_id==page_user.id).limit(5)
     ).scalars().all()
-    spendings=db.session.execute(db.select(Person_Spending).join(Crew,Crew.id == Person_Spending.crew_id).where(Crew.user_id == current_user.id).order_by(Person_Spending.cost).limit(5)).scalars().all()
+    spendings=db.session.execute(db.select(Person_Spending).join(Crew,Crew.id == Person_Spending.crew_id).where(Crew.user_id == page_user.id).order_by(Person_Spending.cost).limit(5)).scalars().all()
 
     if spendings:
       for spending in spendings:
         total_spendings+= spending.cost
-    for crew in current_user.crew_at:
+    for crew in page_user.crew_at:
       update_event_status(crew.event)
       if crew.event.status == "upcoming" or crew.event.status == "ongoing":
         active_event.append(crew.event)
-    for invitation in current_user.invitations:
+    for invitation in page_user.invitations:
       if invitation.status == "pending":
         pending_invitations.append(invitation)
   context = {
@@ -118,36 +120,53 @@ def dashboard():
     "total_spendings":total_spendings,
     "invitations":pending_invitations,
     "activities": activities,
+    "page_user": page_user,
   }
   return render_template("dashboard.html",**context)
 @main.route("/event/<int:event_id>")
-@login_required
 def event(event_id):
     event = db.session.get(Event, event_id)
 
     if event is None:
         abort(404)
 
+    # Show demo event details publicly without creating an authenticated session.
+    page_user = current_user if current_user.is_authenticated else db.session.get(User, 60001)
+    if not current_user.is_authenticated and not Crew.query.filter_by(
+        event_id=event.id,
+        user_id=page_user.id if page_user else None,
+    ).first():
+        abort(404)
     my_crew = Crew.query.filter_by(
         event_id=event.id,
-        user_id=current_user.id
+        user_id=page_user.id if page_user else None
     ).first()
 
     return render_template(
         "event.html",
         event=event,
-        my_crew=my_crew
+        my_crew=my_crew,
+        page_user=page_user,
     )
 @main.route("/events")
 def events():
+  # The demo link may open the seeded account's events; creating still needs login.
+  if not current_user.is_authenticated and request.args.get("new"):
+      return redirect(url_for("auth.login"))
+  page_user = current_user if current_user.is_authenticated else db.session.get(User, 60001)
   eves = []
-  if current_user.is_authenticated:
-     for crew in current_user.crew_at:     
+  if page_user:
+     for crew in page_user.crew_at:
           eves.append(crew.event)
   context = {
      "events":eves
   }
-  return render_template("events.html",**context)
+  return render_template("events.html", page_user=page_user, **context)
+@main.route("/notifications")
+def notifications():
+    # Let demo visitors view the seeded notification list without signing in.
+    return render_template("notifications.html")
+
 @main.route("/users")
 def users():
   return render_template("users.html")

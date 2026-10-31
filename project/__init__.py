@@ -12,7 +12,7 @@ def create_app(config="project.settings"):
 
   db.init_app(app)
   login_manager.init_app(app)
-
+  login_manager.login_view  = "auth.login"
   #login user
   @login_manager.user_loader
   def user_loader(user_id):

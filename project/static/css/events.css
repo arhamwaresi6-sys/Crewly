@@ -2,36 +2,108 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 300px;
+  min-height: 88px;
+  max-height: min(300px, 35vh);
+  max-height: min(300px, 35dvh);
   overflow-y: auto;
   margin-top: 12px;
+  padding: 2px 4px 4px 2px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#friendModal .modal {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 480px);
+  max-height: min(88vh, 720px);
+  max-height: min(88dvh, 720px);
+}
+
+#friendModal .modal-head,
+#friendModal .field,
+#friendModal > .modal > .row,
+#friendModal > .modal > .btn {
+  flex: 0 0 auto;
 }
 
 .friend-option {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 2px 2px 0 var(--shadow-c);
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .friend-option:hover {
-  background: var(--surface, #f8fafc);
+  background: var(--soft);
+  transform: translateY(-1px);
 }
 
 .friend-option:has(input:checked) {
-  background: var(--mint, #d1fae5);
-  border-color: #6ee7b7;
+  background: var(--mint);
+  border-color: var(--line);
+}
+
+.friend-option:focus-within {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
 }
 
 .friend-option input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
-  flex-shrink: 0;
-  accent-color: #0a6b46;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.friend-option input[type="checkbox"]::after {
+  content: "✓";
+  position: static;
+  display: block;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0;
+  transform: none;
+}
+
+.friend-option input[type="checkbox"]:checked {
+  background: var(--lemon);
+}
+
+.friend-option input[type="checkbox"]:checked::after {
+  opacity: 1;
+}
+
+.friend-option input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
 }
 
 .friend-avatar {
@@ -41,10 +113,31 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #dbeafe;
-  color: #1d4ed8;
+  border: 2px solid var(--line);
+  background: var(--sky);
+  color: var(--text);
   font-weight: 700;
 }
+
+.friend-option .grow {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 559px) {
+  .friend-list {
+    max-height: min(260px, 32vh);
+    max-height: min(260px, 32dvh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .friend-option,
+  .friend-option input[type="checkbox"] {
+    transition: none;
+  }
+}
+
 .hide {
   display: none;
 }

@@ -91,7 +91,7 @@
           <div class="big">৳ {{event.expense}}</div>
         </div>
       </div>
-      {%if current_user.id == event.created_by_id%}<span
+      {%if page_user and page_user.id == event.created_by_id%}<span
         class="badge b-warn"
         style="margin-top: 12px"
         >⭐ You are the owner</span

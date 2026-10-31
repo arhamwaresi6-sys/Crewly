@@ -508,9 +508,11 @@ h3 {
   font-weight: 400;
 }
 #bell .note {
+  display: block;
   padding: 12px 10px;
   border-radius: 13px;
   color: var(--text);
+  text-decoration: none;
   font-size: 0.88rem;
   font-weight: 500;
   line-height: 1.45;
@@ -529,6 +531,12 @@ h3 {
 #bell .note:hover {
   background: var(--soft);
   transform: translateX(2px);
+}
+#bell .notification-popup-empty {
+  padding: 14px 10px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
 }
 @keyframes notification-pop-in {
   from {
@@ -3171,5 +3179,199 @@ textarea.input {
   .toast,
   #bell.dropdown:not(.hide) {
     animation: none;
+  }
+}
+
+/* Login */
+body.auth-page {
+  background-color: #f7f9ff;
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(227, 215, 255, 0.8), transparent 34%),
+    radial-gradient(ellipse at 85% 85%, rgba(207, 233, 255, 0.75), transparent 32%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
+}
+.auth-page .auth-wrap {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(24px, 7vh, 68px) 18px;
+}
+.auth-page .auth-card {
+  max-width: 460px;
+  padding: 26px clamp(20px, 6vw, 36px) 24px;
+  border-radius: 28px;
+  box-shadow: 7px 7px 0 var(--shadow-c);
+}
+.auth-page .auth-mascot {
+  width: 76px;
+  margin: 0 auto 10px;
+}
+.auth-page .auth-card h2 {
+  font-size: clamp(1.65rem, 6vw, 2rem);
+  line-height: 1.15;
+}
+.auth-page .auth-card > p {
+  margin: 8px 0 20px;
+}
+.auth-page .auth-tabs {
+  justify-content: center;
+  margin: 0 auto 18px;
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--soft);
+}
+.auth-page .auth-tabs .chip {
+  min-width: 110px;
+}
+.auth-page .auth-card .field {
+  gap: 5px;
+  margin-bottom: 16px;
+}
+.auth-page .auth-card .field label {
+  color: var(--text);
+}
+.auth-page .auth-card .input {
+  min-height: 48px;
+  border-radius: 13px;
+}
+.auth-page .auth-submit {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 3px;
+}
+.auth-page .auth-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(20, 35, 63, 0.12);
+  border-radius: 13px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+.auth-page .auth-back {
+  margin-top: 18px;
+  text-align: center;
+}
+.auth-page .auth-back a {
+  color: var(--purple);
+}
+
+/* Notifications page */
+.notification-heading {
+  align-items: flex-start;
+  gap: 16px;
+}
+.notification-heading p {
+  margin-top: 5px;
+}
+.notification-list {
+  display: grid;
+  max-width: 780px;
+  gap: 12px;
+  margin-top: 22px;
+}
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: var(--b) solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  scroll-margin-top: 24px;
+}
+.notification-item:target {
+  background: var(--lilac);
+}
+.notification-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border: 2px solid var(--line);
+  border-radius: 13px;
+  background: var(--lemon);
+  font-size: 21px;
+}
+.notification-copy {
+  min-width: 0;
+  padding-top: 1px;
+}
+.notification-copy p {
+  overflow-wrap: anywhere;
+}
+.notification-copy time {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.notification-empty {
+  padding: 32px 18px;
+  border: 2px dashed var(--dash);
+  border-radius: 20px;
+  color: var(--muted);
+  text-align: center;
+}
+.notification-empty .material-symbols-rounded {
+  margin-bottom: 8px;
+  color: var(--purple);
+  font-size: 2rem;
+}
+.notification-empty h2 {
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 1.15rem;
+}
+.notification-all-link {
+  display: block;
+  margin: 6px 6px 2px;
+  padding: 11px 9px 5px;
+  border-top: 1px solid rgba(20, 35, 63, 0.14);
+  color: var(--purple);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-align: center;
+}
+@media (max-width: 559px) {
+  .auth-page .auth-wrap {
+    padding: 18px 12px;
+  }
+  .auth-page .auth-card {
+    padding: 20px 18px;
+  }
+  .auth-page .auth-mascot {
+    width: 64px;
+    margin-bottom: 7px;
+  }
+  .auth-page .auth-card > p {
+    margin-bottom: 15px;
+  }
+  .auth-page .auth-tabs {
+    margin-bottom: 14px;
+  }
+  .auth-page .auth-card .field {
+    margin-bottom: 12px;
+  }
+  .auth-page .auth-note {
+    margin-top: 12px;
+  }
+  .auth-page .auth-back {
+    margin-top: 13px;
+  }
+  .notification-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .notification-heading > .btn {
+    align-self: flex-start;
+  }
+  .notification-item {
+    gap: 11px;
+    padding: 13px;
   }
 }

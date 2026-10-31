@@ -27,6 +27,11 @@ function setFilter(btn) {
 
 /* ---------- create event popup ---------- */
 function openCreate() {
+  // Demo visitors can browse, but event creation requires a real login session.
+  if (isDemoUser) {
+    window.location.href = ROUTES.login;
+    return;
+  }
   invited = [];
   drawChips();
   preview();
@@ -179,50 +184,61 @@ function closeFriendModal() {
 async function renderFriends(query = "") {
   const list = $("friendList");
   const search = query.toLowerCase().trim();
-  const response = await fetch("/api/friends");
-  if (!response.ok) {
-    list.innerHTML = '<div class="empty">Could not load friends.</div>';
-    return;
-  }
-  const FRIENDS = await response.json();
-  // Exclude yourself and users already invited.
-  const friends = FRIENDS.filter(
-    (user) =>
-      !invited.some((id) => String(id) === String(user.id)) &&
-      `${user.name} ${user.email}`.toLowerCase().includes(search),
-  );
+  try {
+    const response = await fetch("/api/friends");
+    if (!response.ok) {
+      list.innerHTML = '<div class="empty">Could not load friends.</div>';
+      return;
+    }
+    const FRIENDS = await response.json();
+    // Keep invite chips in sync with friends even if the cached user list is old.
+    USERS = [
+      ...USERS.filter(
+        (user) => !FRIENDS.some((friend) => friend.id === user.id),
+      ),
+      ...FRIENDS,
+    ];
+    const friends = FRIENDS.filter(
+      (user) =>
+        !invited.some((id) => String(id) === String(user.id)) &&
+        `${user.name} ${user.email}`.toLowerCase().includes(search),
+    );
 
-  if (!friends.length) {
-    list.innerHTML = '<div class="empty">No friends found.</div>';
+    if (!friends.length) {
+      list.innerHTML = '<div class="empty">No friends found.</div>';
+      updateFriendCount();
+      return;
+    }
+
+    list.innerHTML = friends
+      .map(
+        (user) => `
+          <label class="friend-option">
+            <input
+              type="checkbox"
+              value="${user.id}"
+              ${friendSelection.has(String(user.id)) ? "checked" : ""}
+              onchange="toggleFriendSelection(this)"
+            />
+
+            <div class="friend-avatar">
+              ${esc(user.name.slice(0, 1).toUpperCase())}
+            </div>
+
+            <div class="grow">
+              <b>${esc(user.name)}</b>
+              <div class="muted small">${esc(user.email)}</div>
+            </div>
+          </label>
+        `,
+      )
+      .join("");
+
     updateFriendCount();
-    return;
+  } catch (error) {
+    console.error("Could not load friends:", error);
+    list.innerHTML = '<div class="empty">Could not load friends.</div>';
   }
-
-  list.innerHTML = friends
-    .map(
-      (user) => `
-        <label class="friend-option">
-          <input
-            type="checkbox"
-            value="${user.id}"
-            ${friendSelection.has(String(user.id)) ? "checked" : ""}
-            onchange="toggleFriendSelection(this)"
-          />
-
-          <div class="friend-avatar">
-            ${esc(user.name.slice(0, 1).toUpperCase())}
-          </div>
-
-          <div class="grow">
-            <b>${esc(user.name)}</b>
-            <div class="muted small">${esc(user.email)}</div>
-          </div>
-        </label>
-      `,
-    )
-    .join("");
-
-  updateFriendCount();
 }
 
 // Search the friend list.
@@ -260,8 +276,8 @@ function confirmFriends() {
 
   friendSelection.clear();
 
-  // Refresh the existing invitation chips.
-  renderInvited();
+  // Use the existing chip renderer after adding the selected friends.
+  drawChips();
 
   closeFriendModal();
 

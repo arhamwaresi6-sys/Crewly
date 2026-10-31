@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Log in{% endblock %} {% block nav
+{% extends "base.html" %} {% block title %}Log in{% endblock %} {% block body_class %}auth-page{% endblock %} {% block nav
 %}{% endblock %} {# no navbar on the login page #} {% block content %}
 <div class="auth-wrap">
   <div class="card auth-card">
@@ -6,7 +6,7 @@
     <h2 id="title">Welcome back</h2>
     <p class="muted">Log in with your Gmail to continue.</p>
 
-    <div class="tabs" style="justify-content: center">
+    <div class="tabs auth-tabs">
       <button class="chip active" id="tabLogin" onclick="setMode('login')">
         Log in
       </button>
@@ -41,24 +41,25 @@
           minlength="6"
         />
       </div>
-      <button
-        class="btn btn-primary"
-        style="width: 100%"
-        id="submitBtn"
-        type="submit"
-      >
+      <button class="btn btn-primary auth-submit" id="submitBtn" type="submit">
         Log in
       </button>
     </form>
 
-    <div class="divider">or</div>
-    {# BACKEND (optional): Google sign-in -> point this to your /auth/google
-    route #}
-    <div class="btn" style="width: 100%" id="error-container">
-      Your people. Your plans. Your money.
+    <div class="auth-note" id="error-container" role="status" aria-live="polite">
+      {# Consume login-required flashes here instead of showing them on the next page. #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <span class="auth-message {{ category }}">{{ message }}</span>
+          {% endfor %}
+        {% else %}
+          Your people. Your plans. Your money.
+        {% endif %}
+      {% endwith %}
     </div>
 
-    <p class="small muted" style="text-align: center; margin-top: 18px">
+    <p class="small muted auth-back">
       <a href="{{ url_for('main.index') }}"><b>← Back to home</b></a>
     </p>
   </div>

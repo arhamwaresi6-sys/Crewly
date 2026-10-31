@@ -214,9 +214,9 @@ content %}
 {% endblock %} {% block scripts %}
 <script>
   window.COMMUNITY_DATA = {
-      currentUserId: {{ current_user.id|tojson }},
-      currentUserRole: {{ current_user.role|tojson }},
-      users: {{ users|tojson }}
+      currentUserId: {{ current_user.id|default(none)|tojson }},
+      currentUserRole: {{ current_user.role|default('guest')|tojson }},
+      users: {{ community_data|default([], true)|tojson }}
   };
 </script>
 <script src="{{ url_for('static', filename='js/community.js') }}"></script>

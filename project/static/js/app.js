@@ -3,19 +3,18 @@ const CURRENCY = "৳";
 const $ = (id) => document.getElementById(id); //selects by id
 const eventUrl = (id) => ROUTES.event.replace("__ID__", id); // -> /events/1
 
-const DEFAULT_USERS = {
-  id: 6001,
+// Demo browsing uses the seeded account; Flask still treats guests as signed out.
+const DEMO_USER = {
+  id: 60001,
   name: "Rahim Ahmed",
   email: "rahim.ahmed@example.com",
   role: "user",
   status: "active",
   joined: "2026-10-23",
-  count_event: 0,
+  count_event: 3,
 };
-if (window.CURRENT_USER == null) {
-  window.CURRENT_USER = DEFAULT_USERS;
-}
-const currentUser = window.CURRENT_USER;
+const isDemoUser = window.CURRENT_USER == null;
+const currentUser = window.CURRENT_USER || DEMO_USER;
 
 const load = (k, d) => {
   try {
@@ -44,8 +43,8 @@ async function loadUsers() {
 
   localStorage.setItem("users", JSON.stringify(USERS));
 }
-async function loadNotifications() {
-  if (NOTIFICATIONS.length > 0) {
+async function loadNotifications(refresh = false) {
+  if (!refresh && NOTIFICATIONS.length > 0) {
     return; // Use cached notifications
   }
 
@@ -128,7 +127,19 @@ function requireRole(roles) {
    Fills the demo dropdown, avatar and notifications, and shows the Admin link to staff.
    ===================================================== */
 function toggleBell() {
-  $("bell").classList.toggle("hide");
+  const bell = $("bell");
+  const button = document.querySelector(".bell-wrap > .icon-btn");
+  const opening = bell.classList.contains("hide");
+  bell.classList.toggle("hide", !opening);
+  button?.setAttribute("aria-expanded", String(opening));
+  if (opening) {
+    loadNotifications(true)
+      .then(renderBell)
+      .catch((error) => {
+        console.error("Failed to refresh notifications:", error);
+        toast("Could not refresh notifications.");
+      });
+  }
 }
 document.addEventListener("click", (e) => {
   // click outside = close bell
@@ -137,20 +148,63 @@ document.addEventListener("click", (e) => {
     bell &&
     !bell.classList.contains("hide") &&
     !e.target.closest(".bell-wrap")
-  )
+  ) {
     bell.classList.add("hide");
+    document
+      .querySelector(".bell-wrap > .icon-btn")
+      ?.setAttribute("aria-expanded", "false");
+  }
 });
+
+function renderBell() {
+  const bell = $("bell");
+  if (!bell) return;
+  bell.innerHTML =
+    '<b class="dd-title">Notifications</b>' +
+    (NOTIFICATIONS.length
+      ? NOTIFICATIONS.slice(0, 3)
+          .map(
+            (notification) =>
+              `<a class="note" href="${ROUTES.notifications}#notification-${encodeURIComponent(notification.id)}">${esc(notification.message)}</a>`,
+          )
+          .join("")
+      : '<p class="notification-popup-empty">You’re all caught up.</p>') +
+    `<a class="notification-all-link" href="${ROUTES.notifications}">See all notifications</a>`;
+}
 
 function initShell() {
   const av = $("nav-avatar");
   if (av) av.innerHTML = avatar(currentUser);
-  const bell = $("bell");
-  if (bell)
-    bell.innerHTML =
-      '<b class="dd-title">Notifications</b>' +
-      NOTIFICATIONS.map((n) => `<div class="note">• ${n.message}</div>`).join(
-        "",
-      );
+  renderBell();
+  const notificationList = $("notification-list");
+  if (notificationList) {
+    notificationList.innerHTML = NOTIFICATIONS.length
+      ? NOTIFICATIONS.map((notification) => {
+          const date = notification.created_at
+            ? new Date(notification.created_at)
+            : null;
+          const dateText =
+            date && !Number.isNaN(date.getTime())
+              ? date.toLocaleString()
+              : "";
+          return `
+            <article class="notification-item" id="notification-${encodeURIComponent(notification.id)}">
+              <span class="material-symbols-rounded notification-icon" aria-hidden="true">notifications</span>
+              <div class="notification-copy">
+                <p>${esc(notification.message)}</p>
+                ${dateText ? `<time>${esc(dateText)}</time>` : ""}
+              </div>
+            </article>
+          `;
+        }).join("")
+      : '<div class="notification-empty"><span class="material-symbols-rounded" aria-hidden="true">notifications_none</span><h2>You\'re all caught up</h2><p>New updates will show up here.</p></div>';
+    const selectedNotification = document.getElementById(
+      window.location.hash.slice(1),
+    );
+    if (selectedNotification) {
+      selectedNotification.scrollIntoView({ block: "center" });
+    }
+  }
   /* BACKEND: you can also render the Admin link with Jinja:  {% if current_user.role != 'user' %} */
   if (isStaff())
     document
@@ -317,7 +371,9 @@ async function init() {
     if (cachedUsers === null) {
       await loadUsers();
     }
-    if (cachedNotifications === null) {
+    if ($("notification-list")) {
+      await loadNotifications(true);
+    } else if (cachedNotifications === null) {
       await loadNotifications();
     }
 

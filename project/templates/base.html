@@ -37,6 +37,7 @@
         home: "{{ url_for('main.index') }}",
         login: "{{ url_for('auth.login') }}",
         dashboard: "{{ url_for('main.dashboard') }}",
+        notifications: "{{ url_for('main.notifications') }}",
         events: "{{ url_for('main.events') }}",
         event: "{{ url_for('main.event', event_id=0) }}".replace(
           "/0",

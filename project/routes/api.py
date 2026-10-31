@@ -41,7 +41,8 @@ def searched_users():
 @api.route("/friends")
 @login_required
 def friends():
-  users = current_user.friends
+  # The relationship contains Friend records; return each linked User for the modal.
+  users = [friend.friend for friend in current_user.friends]
   return jsonify([
           {
               "id": user.id,
@@ -51,13 +52,13 @@ def friends():
           for user in users
       ])
 @api.route("/notifications")
-@login_required
 def get_notifications():
+    # Anonymous visitors see only the notifications for the public demo account.
+    user_id = current_user.id if current_user.is_authenticated else 60001
     notifications = db.session.execute(
         db.select(Notification)
-        .where(Notification.user_id == current_user.id)
+        .where(Notification.user_id == user_id)
         .order_by(Notification.created_at.desc())
-        .limit(3)
     ).scalars().all()
 
     return jsonify([
@@ -162,4 +163,3 @@ def announcement():
         "message": "Announcement sent successfully.",
         "recipients": len(notifications),
     }, 200
-

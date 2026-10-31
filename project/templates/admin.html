@@ -112,7 +112,7 @@
             <span class="admin-list-icon">🎉</span>
             <div class="admin-grow">
               <strong>{{ event.name }}</strong>
-              <small>By {{ event.owner_name }}</small>
+              <small>By {{ event.created_by.name }}</small>
             </div>
             <span class="admin-badge"> {{ event.status }} </span>
           </div>
@@ -257,8 +257,8 @@
                 <small class="admin-cell-sub">#{{ event.id }}</small>
               </td>
 
-              <td>{{ event.owner_name }}</td>
-              <td>{{ event.member_count }}</td>
+              <td>{{ event.created_by.name }}</td>
+              <td>{{ event.crews|length }}</td>
               <td>৳{{ "{:,.0f}".format(event.budget or 0) }}</td>
 
               <td>

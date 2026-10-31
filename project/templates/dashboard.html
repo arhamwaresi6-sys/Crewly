@@ -3,9 +3,9 @@
 <main class="main">
   <div class="page-head">
     <div>
-      {% if current_user.is_authenticated %}
+      {% if page_user %}
       <h1 id="hello">
-        Welcome back, {{ current_user.name.split(' ')[0].capitalize() }} 👋
+        Welcome back, {{ page_user.name.split(' ')[0].capitalize() }} 👋
       </h1>
       {% else %}
       <h1 id="hello">Welcome! 👋</h1>
@@ -21,22 +21,22 @@
 
   <!-- ===== summary numbers ===== -->
   <section class="grid stats" id="stats">
-    {% if current_user.is_authenticated %}
+    {% if page_user %}
     <div class="card c-peach">
       <div class="stat-label">You still owe</div>
-      <div class="stat-value down">৳ {{current_user.owe}}</div>
+      <div class="stat-value down">৳ {{page_user.owe}}</div>
     </div>
     <div class="card c-mint">
       <div class="stat-label">Already paid</div>
-      <div class="stat-value up">৳ {{current_user.paid}}</div>
+      <div class="stat-value up">৳ {{page_user.paid}}</div>
     </div>
     <div class="card c-sky">
       <div class="stat-label">Active events</div>
-      <div class="stat-value">{{current_user.count_active_event}}</div>
+      <div class="stat-value">{{page_user.count_active_event}}</div>
     </div>
     <div class="card c-lemon">
       <div class="stat-label">Invitations</div>
-      <div class="stat-value">{{current_user.count_invitation}}</div>
+      <div class="stat-value">{{page_user.count_invitation}}</div>
     </div>
     {% else %}
     <div class="card c-peach">
@@ -182,8 +182,12 @@
           <div class="grow">
             <b style="white-space: normal">{{activity.message}}</b
             ><span class="muted small">
-              {{ activity.created_at.strftime('%Y-%m-%d') }} · {{
-              activity.created_at.strftime('%I:%M %p') }}
+              {% if activity.created_at %}
+              {{ activity.created_at.strftime('%Y-%m-%d') }} ·
+              {{ activity.created_at.strftime('%I:%M %p') }}
+              {% else %}
+              Time not recorded
+              {% endif %}
             </span>
           </div>
         </div>
