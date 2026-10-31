@@ -27,13 +27,15 @@ const load = (k, d) => {
 let USERS = load("users", []);
 let NOTIFICATIONS = load("notifications", []);
 
-// loads users if it doesnt exist inside localStorage
-async function loadUsers() {
-  if (USERS.length > 0) {
+// Refresh user directories on pages where registrations and role changes must appear immediately.
+async function loadUsers(refresh = false) {
+  if (!refresh && USERS.length > 0) {
     return; // Use cached users
   }
 
-  const response = await fetch("/api/users");
+  const response = await fetch("/api/users", {
+    cache: refresh ? "no-store" : "default",
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch users");
@@ -212,6 +214,114 @@ function initShell() {
       .forEach((el) => el.classList.remove("hide"));
 }
 
+function initScrollEffects() {
+  const progress = document.createElement("div");
+  progress.className = "scroll-progress";
+  progress.setAttribute("aria-hidden", "true");
+
+  const backToTop = document.createElement("button");
+  backToTop.className = "scroll-top icon-btn";
+  backToTop.type = "button";
+  backToTop.setAttribute("aria-label", "Back to top");
+  backToTop.innerHTML =
+    '<span class="material-symbols-rounded" aria-hidden="true">arrow_upward</span>';
+  document.body.append(progress, backToTop);
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const revealSelector = [
+    ".main > .page-head",
+    ".main > .grid",
+    ".main > .two-col > div",
+    ".main .event-card",
+    ".main .notification-item",
+    ".landing-page > .section",
+    ".landing-page .features > *",
+    ".landing-page .steps > *",
+    ".landing-page .faq-list > details",
+  ].join(",");
+
+  let revealObserver = null;
+  if (!prefersReducedMotion && "IntersectionObserver" in window) {
+    revealObserver = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -24px 0px" },
+    );
+  }
+
+  const observeReveals = (root) => {
+    const candidates = [];
+    if (root instanceof Element && root.matches(revealSelector)) {
+      candidates.push(root);
+    }
+    if (root.querySelectorAll) {
+      candidates.push(...root.querySelectorAll(revealSelector));
+    }
+
+    candidates.forEach((element) => {
+      if (element.classList.contains("scroll-reveal")) return;
+      element.classList.add("scroll-reveal");
+      const siblingIndex = Array.prototype.indexOf.call(
+        element.parentElement.children,
+        element,
+      );
+      element.style.setProperty(
+        "--reveal-delay",
+        `${Math.min(siblingIndex, 4) * 65}ms`,
+      );
+      if (revealObserver) {
+        revealObserver.observe(element);
+      } else {
+        element.classList.add("is-revealed");
+      }
+    });
+  };
+
+  observeReveals(document.body);
+  const contentObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof Element) observeReveals(node);
+      });
+    });
+  });
+  contentObserver.observe(document.body, { childList: true, subtree: true });
+
+  let scrollFrame = 0;
+  const updateScrollEffects = () => {
+    scrollFrame = 0;
+    const scrollableHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
+    const progressRatio =
+      scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
+    progress.style.transform = `scaleX(${Math.min(1, Math.max(0, progressRatio))})`;
+    backToTop.classList.toggle("is-visible", window.scrollY > 560);
+  };
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollEffects);
+    },
+    { passive: true },
+  );
+  window.addEventListener("resize", updateScrollEffects, { passive: true });
+  backToTop.addEventListener("click", () =>
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? "instant" : "smooth",
+    }),
+  );
+  updateScrollEffects();
+}
+
 /* =====================================================
    4) MODAL + TOAST
    ===================================================== */
@@ -368,8 +478,20 @@ async function init() {
   try {
     const cachedUsers = localStorage.getItem("users");
     const cachedNotifications = localStorage.getItem("notifications");
-    if (cachedUsers === null) {
-      await loadUsers();
+    // Community, Admin, and Users must not render a stale local user directory.
+    const refreshUsers = Boolean(
+      $("roleResults") || $("usersTableBody") || ($("list") && $("count")),
+    );
+    let userRefreshError = null;
+    if (cachedUsers === null || refreshUsers) {
+      try {
+        await loadUsers(refreshUsers);
+      } catch (error) {
+        if (!refreshUsers || !USERS.length) throw error;
+        // Keep these pages usable with saved data if the refresh endpoint is unavailable.
+        userRefreshError = error;
+        console.error("Failed to refresh the user directory:", error);
+      }
     }
     if ($("notification-list")) {
       await loadNotifications(true);
@@ -378,6 +500,9 @@ async function init() {
     }
 
     initShell();
+    if (userRefreshError) {
+      toast("Could not refresh users. Showing saved data.");
+    }
 
     if (typeof draw === "function") {
       draw();
@@ -387,4 +512,5 @@ async function init() {
   }
 }
 makeTiles();
+initScrollEffects();
 init();

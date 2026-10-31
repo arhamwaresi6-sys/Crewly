@@ -2289,6 +2289,57 @@ video {
   width: 100%;
 }
 
+/* Scroll-driven reveals keep long pages lively without changing their theme. */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.scroll-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+.scroll-progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 49;
+  width: 100%;
+  height: 4px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--grad);
+  box-shadow: 0 1px 5px rgba(20, 35, 63, 0.18);
+  pointer-events: none;
+}
+.scroll-top {
+  position: fixed;
+  z-index: 90;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: var(--lemon);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.92);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 180ms ease;
+}
+.scroll-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.scroll-top:hover {
+  transform: translateY(-3px) rotate(-8deg);
+}
+
 /* Landing page polish */
 .landing-page .hero {
   position: relative;
@@ -2328,8 +2379,8 @@ video {
   align-items: center;
 }
 .landing-page .tile {
-  animation: tile-sort 280ms cubic-bezier(0.2, 0.75, 0.25, 1) backwards;
-  animation-delay: calc(var(--i, 0) * 185ms);
+  animation: tile-sort 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 85ms);
 }
 @keyframes tile-sort {
   0% {
@@ -2337,10 +2388,10 @@ video {
     transform: translate3d(var(--scatter-x, 0), var(--scatter-y, 0), 0)
       rotate(var(--scatter-r, 0deg)) scale(1);
   }
-  72% {
+  76% {
     opacity: 1;
-    transform: translate3d(0, -3px, 0) rotate(calc(var(--r, 0deg) + 2deg))
-      scale(1.035);
+    transform: translate3d(0, -2px, 0) rotate(calc(var(--r, 0deg) + 1.5deg))
+      scale(1.025);
   }
   100% {
     opacity: 1;
@@ -2353,40 +2404,6 @@ video {
 .landing-page .feature .material-symbols-rounded {
   font-size: 1.7rem;
 }
-.landing-page .feature,
-.landing-page .steps > .card,
-.landing-page .roles > .card {
-  animation: landing-card-enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.landing-page .features > :nth-child(2),
-.landing-page .steps > :nth-child(2),
-.landing-page .roles > :nth-child(2) {
-  animation-delay: 70ms;
-}
-.landing-page .features > :nth-child(3),
-.landing-page .steps > :nth-child(3),
-.landing-page .roles > :nth-child(3) {
-  animation-delay: 140ms;
-}
-.landing-page .features > :nth-child(4) {
-  animation-delay: 210ms;
-}
-.landing-page .features > :nth-child(5) {
-  animation-delay: 280ms;
-}
-.landing-page .features > :nth-child(6) {
-  animation-delay: 350ms;
-}
-@keyframes landing-card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 @media (max-width: 759px) {
   .landing-page .hero {
     width: calc(100% - 24px);
@@ -2397,7 +2414,7 @@ video {
 }
 @media (max-width: 559px) {
   .landing-page .hero {
-    gap: 20px;
+    gap: 16px;
     padding: 24px 15px 20px;
     border-radius: 22px;
   }
@@ -2434,7 +2451,7 @@ video {
   }
   .landing-page .hero-sub {
     max-width: none;
-    margin: 20px 0 14px;
+    margin: 16px 0 12px;
     font-size: clamp(1.35rem, 6vw, 1.75rem);
   }
   .landing-page .hero-meta {
@@ -2460,7 +2477,7 @@ video {
   }
   .landing-page .hero-art {
     gap: 10px;
-    padding: 8px 0 68px;
+    padding: 8px 0 60px;
   }
   .landing-page .float-card {
     display: grid;
@@ -2651,6 +2668,17 @@ textarea.input {
   html {
     scroll-behavior: auto;
   }
+
+  .scroll-reveal,
+  .scroll-reveal.is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .scroll-top {
+    transition: none;
+  }
 }
 
 .create-event-modal {
@@ -2716,15 +2744,19 @@ textarea.input {
 }
 @media (max-width: 559px) {
   .create-event-modal .two {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 9px;
   }
   .create-event-modal .two .field {
     min-width: 0;
   }
   .create-event-modal input[type="date"] {
-    padding-inline: 8px;
-    font-size: 0.78rem;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding-inline: 10px;
+    font-size: 16px;
   }
   .create-event-modal .row[style] {
     align-items: stretch;
@@ -2743,6 +2775,10 @@ textarea.input {
 
 /* ---------- Premium mobile navigation and modal fit ---------- */
 @media (max-width: 979px) {
+  .scroll-top {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
   .bottom-nav {
     align-items: center;
     min-height: 62px;

@@ -21,6 +21,11 @@
         href="{{ url_for('auth.login', mode='signup') }}"
         >Get started</a
       >
+      {% else %}
+      {# Give signed-in visitors a direct route into their workspace. #}
+      <a class="btn btn-sm btn-primary" href="{{ url_for('main.dashboard') }}"
+        >Dashboard</a
+      >
       {%endif%}
     </div>
   </nav>

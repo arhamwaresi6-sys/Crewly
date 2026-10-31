@@ -5,7 +5,13 @@ block body_class %}landing-page{% endblock %} {% block content %}
 <!-- ============ HERO ============ -->
 <section class="hero">
   <div class="hero-text">
+    {% if current_user.is_authenticated %}
+    <span class="eyebrow"
+      ><span>✦</span> WELCOME BACK, {{ current_user.name.split(' ')[0] }}</span
+    >
+    {% else %}
     <span class="eyebrow"><span>✦</span> SPLITWISE+ · FREE FOR FRIENDS</span>
+    {% endif %}
 
     {# each letter becomes a chunky tile (see makeTiles() in app.js) #}
     <h1 class="tile-title" aria-label="Split expenses easily">
@@ -34,6 +40,12 @@ block body_class %}landing-page{% endblock %} {% block content %}
       </li>
     </ul>
     <div class="row wrap hero-cta">
+      {% if current_user.is_authenticated %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.dashboard') }}"
+        >Go to dashboard →</a
+      >
+      <a class="btn btn-lg" href="{{ url_for('main.events') }}">View events</a>
+      {% else %}
       <a
         class="btn btn-primary btn-lg"
         href="{{ url_for('auth.login', mode='signup') }}"
@@ -42,6 +54,7 @@ block body_class %}landing-page{% endblock %} {% block content %}
       <a class="btn btn-lg" href="{{ url_for('main.dashboard') }}"
         >Peek at the demo</a
       >
+      {% endif %}
     </div>
   </div>
 
@@ -271,11 +284,19 @@ block body_class %}landing-page{% endblock %} {% block content %}
 <section class="section">
   <div class="cta">
     <div class="mascot-wrap">{% include '_mascot.html' %}</div>
+    {% if current_user.is_authenticated %}
+    <h2>Ready to keep things moving?</h2>
+    <p>Pick up where you left off in your dashboard.</p>
+    <a class="btn btn-lg" href="{{ url_for('main.dashboard') }}"
+      >Open dashboard →</a
+    >
+    {% else %}
     <h2>Ready to split smarter?</h2>
     <p>Start your first event in under a minute.</p>
     <a class="btn btn-lg" href="{{ url_for('auth.login', mode='signup') }}"
       >Get started free →</a
     >
+    {% endif %}
   </div>
 </section>
 
