@@ -286,13 +286,13 @@ h3 {
     box-shadow 0.15s;
 }
 .stats > .card:nth-child(odd) {
-  transform: rotate(-0.8deg);
+  transform: none;
 }
 .stats > .card:nth-child(even) {
-  transform: rotate(0.8deg);
+  transform: none;
 }
 .stats > .card:hover {
-  transform: rotate(0) translate(-2px, -2px);
+  transform: translate(-2px, -2px);
   box-shadow: 8px 8px 0 var(--shadow-c);
 }
 .stat-label {
@@ -370,6 +370,9 @@ h3 {
   margin: 0 auto;
 }
 .nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 16px;
   border-radius: 999px;
   font-weight: 700;
@@ -382,6 +385,9 @@ h3 {
 .nav-links a.active {
   background: var(--accent-bg);
   color: var(--accent-fg);
+}
+.nav-icon {
+  font-size: 1.15rem;
 }
 .nav-right {
   display: flex;
@@ -1216,13 +1222,13 @@ body.community .modal-backdrop {
   --r: -4deg;
   top: 14px;
   left: 2%;
-  width: 54%;
+  width: 50%;
 }
 .fc2 {
   --r: 3deg;
   top: 78px;
   right: 0;
-  width: 47%;
+  width: 44%;
   --d: -2s;
 }
 .fc3 {
@@ -1622,9 +1628,6 @@ body.community .modal-backdrop {
     gap: 24px;
     padding: 30px 16px 22px;
   }
-  .hero-art {
-    min-height: 460px;
-  }
   .section {
     padding: 36px 16px;
   }
@@ -1676,7 +1679,11 @@ body.community .modal-backdrop {
     padding-inline: 14px;
   }
   .stats {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats .stat-value {
+    overflow-wrap: anywhere;
+    font-size: clamp(1.15rem, 5vw, 1.55rem);
   }
   .cards,
   .features,
@@ -1694,20 +1701,13 @@ body.community .modal-backdrop {
     padding-inline: 14px;
   }
   .hero-art {
-    min-height: 440px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 0;
   }
-  .fc1 {
-    left: 0;
-    width: 62%;
-  }
-  .fc2 {
-    right: 0;
-    width: 58%;
-  }
+  .fc1,
+  .fc2,
   .fc3 {
-    top: 260px;
-    left: 16%;
-    width: 62%;
+    grid-column: 1;
   }
   .deco-dash {
     display: none;
@@ -1749,6 +1749,12 @@ body.community .modal-backdrop {
   }
 }
 
+@media (max-width: 399px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (min-width: 1100px) {
   .stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1761,6 +1767,44 @@ body.community .modal-backdrop {
   }
   .steps {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1099px) {
+  .hero-art {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    min-height: 0;
+    padding: 18px 8px 72px;
+  }
+
+  .float-card {
+    position: relative;
+    inset: auto;
+    width: auto;
+    min-width: 0;
+    --r: 0deg;
+    animation: none;
+  }
+
+  .deco-dash,
+  .deco-star.s2,
+  .deco-dot {
+    display: none;
+  }
+
+  .deco-mascot {
+    right: 4%;
+    bottom: 0;
+    width: 88px;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-art {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 0;
   }
 }
 
@@ -2050,6 +2094,25 @@ video {
 .nav-right {
   min-width: 0;
 }
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
 .grid > *,
 .row > *,
 .page-head > *,
@@ -2062,6 +2125,22 @@ video {
 }
 .main {
   overflow-wrap: anywhere;
+}
+.main,
+.admin-page,
+.auth-wrap,
+.hero {
+  animation: page-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .section {
   width: min(100%, 1190px);
@@ -2137,9 +2216,23 @@ textarea.input {
 .nav-profile {
   max-width: 100%;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .nav-profile > * {
   min-width: 0;
+}
+
+@media (min-width: 980px) and (max-width: 1099px) {
+  .nav-links a {
+    justify-content: center;
+    padding-inline: 11px;
+  }
+
+  .nav-links .nav-label {
+    display: none;
+  }
 }
 
 @media (max-width: 559px) {

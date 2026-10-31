@@ -1,9 +1,9 @@
 {# Navbar used on every app page. Each page sets {% set active_page = 'events'
 %} to highlight its link. #} {% set links = [ ('main.dashboard',
-'dashboard','🏠', 'Dashboard'), ('main.events', 'events', '📅', 'Events'),
-('main.users','users', '👥', 'Users'), ('main.community', 'community', '🌐',
-'Community'),('main.friends', 'friends', '🤝', 'Friends'), ('main.admin',
-'admin', '🛡️', 'Admin') ] %}
+'dashboard','dashboard', 'Dashboard'), ('main.events', 'events', 'event',
+'Events'), ('main.users','users', 'group', 'Users'), ('main.community',
+'community', 'public', 'Community'),('main.friends', 'friends', 'handshake',
+'Friends'), ('main.admin', 'admin', 'admin_panel_settings', 'Admin') ] %}
 
 <header class="nav-wrap">
   <nav class="nav">
@@ -17,8 +17,12 @@
       {% for endpoint, key, icon, label in links %}
       <a
         href="{{ url_for(endpoint) }}"
+        aria-label="{{ label }}"
+        title="{{ label }}"
         class="{{ 'active' if active_page == key }} {{ 'staff-only hide' if key == 'admin' }}"
-        >{{ label }}</a
+        ><span class="material-symbols-rounded nav-icon" aria-hidden="true"
+          >{{ icon }}</span
+        ><span class="nav-label">{{ label }}</span></a
       >
       {% endfor %}
     </div>
@@ -39,7 +43,9 @@
           onclick="toggleBell()"
           aria-label="Notifications"
         >
-          🔔<i class="dot"></i>
+          <span class="material-symbols-rounded" aria-hidden="true"
+            >notifications</span
+          ><i class="dot"></i>
         </button>
         <div id="bell" class="dropdown hide"></div>
       </div>
@@ -52,8 +58,12 @@
   {% for endpoint, key, icon, label in links %}
   <a
     href="{{ url_for(endpoint) }}"
+    aria-label="{{ label }}"
+    title="{{ label }}"
     class="{{ 'active' if active_page == key }} {{ 'staff-only hide' if key == 'admin' }}"
-    ><span class="ico">{{ icon }}</span><span>{{ label }}</span></a
+    ><span class="material-symbols-rounded ico" aria-hidden="true"
+      >{{ icon }}</span
+    ><span>{{ label }}</span></a
   >
   {% endfor %}
 </nav>

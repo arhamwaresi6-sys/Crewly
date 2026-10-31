@@ -1188,9 +1188,40 @@
 }
 @media (max-width: 430px) {
   .admin-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-stat:last-child {
+    grid-column: 1 / -1;
   }
   .admin-stat {
     min-height: 102px;
+  }
+}
+
+@media (max-width: 979px) {
+  .admin-page {
+    padding-bottom: 112px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    padding: 4px 2px 12px;
+  }
+
+  .admin-tab {
+    flex: 0 0 auto;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+
+  .admin-table-wrap {
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }
