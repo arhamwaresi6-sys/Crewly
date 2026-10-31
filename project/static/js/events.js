@@ -35,6 +35,7 @@ function openCreate() {
   $("evStartDate").value = today;
   $("evEndDate").value = today;
   openModal("createModal");
+  $("createModal").querySelector(".create-event-fields").scrollTop = 0;
 }
 
 /* BACKEND TODO #2: search users by gmail while typing

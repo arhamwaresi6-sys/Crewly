@@ -175,6 +175,8 @@ function toast(msg) {
     t = document.createElement("div");
     t.id = "toast";
     t.className = "toast";
+    t.setAttribute("role", "status");
+    t.setAttribute("aria-live", "polite");
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -197,6 +199,7 @@ function makeTiles() {
     "#55b2ea",
     "#5cc3f0",
   ]; // purple -> cyan
+  let tileSequence = 0;
   document.querySelectorAll("[data-tiles]").forEach((line, li) => {
     const letters = [...line.dataset.tiles];
     line.innerHTML = "";
@@ -205,8 +208,23 @@ function makeTiles() {
       t.className = "tile";
       t.textContent = ch;
       t.setAttribute("aria-hidden", "true");
-      t.style.setProperty("--r", ((i * 7 + li * 3) % 9) - 4 + "deg"); // tiny random-looking tilt
-      t.style.setProperty("--i", i + li * 3); // pop-in delay
+      const tileIndex = tileSequence++;
+      const scatterAngle = tileIndex * 2.4 + li * 0.8;
+      const scatterDistance = 24 + ((tileIndex * 17) % 3) * 8;
+      t.style.setProperty("--r", ((i * 7 + li * 3) % 9) - 4 + "deg");
+      t.style.setProperty("--i", tileIndex);
+      t.style.setProperty(
+        "--scatter-x",
+        `${Math.round(Math.cos(scatterAngle) * scatterDistance)}px`,
+      );
+      t.style.setProperty(
+        "--scatter-y",
+        `${Math.round(Math.sin(scatterAngle) * scatterDistance)}px`,
+      );
+      t.style.setProperty(
+        "--scatter-r",
+        `${((tileIndex * 37 + 19) % 65) - 32}deg`,
+      );
       if (line.dataset.style === "grad")
         t.style.background =
           GRAD[

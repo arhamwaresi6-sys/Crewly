@@ -182,7 +182,13 @@ content %}
 <!-- Confirmation modal -->
 {% if current_user.role == 'root' %}
 <div class="community-modal-backdrop" id="roleModal">
-  <div class="community-modal">
+  <div
+    class="community-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+    aria-describedby="modalMessage"
+  >
     <div class="modal-symbol" id="modalSymbol">✦</div>
     <h2 id="modalTitle">Change role?</h2>
     <p id="modalMessage"></p>
@@ -198,7 +204,12 @@ content %}
 {% endif %}
 
 <!-- Toast -->
-<div id="communityToast" class="community-toast"></div>
+<div
+  id="communityToast"
+  class="community-toast"
+  role="status"
+  aria-live="polite"
+></div>
 
 {% endblock %} {% block scripts %}
 <script>

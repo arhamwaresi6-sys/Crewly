@@ -15,22 +15,86 @@ document.addEventListener("DOMContentLoaded", () => {
 ======================================== */
 
 function showAlert(message, type = "success") {
-  const container = document.getElementById("adminToastContainer");
-
+  let container = document.getElementById("adminToastContainer");
   if (!container) {
-    alert(message);
-    return;
+    container = document.createElement("div");
+    container.id = "adminToastContainer";
+    container.className = "admin-toast-container";
+    document.body.appendChild(container);
   }
+  container.setAttribute("role", "region");
+  container.setAttribute("aria-label", "Notifications");
+  container.setAttribute("aria-live", "off");
 
   const toast = document.createElement("div");
   toast.className = `admin-toast ${type}`;
   toast.textContent = message;
+  toast.setAttribute("role", type === "error" ? "alert" : "status");
+  toast.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
 
   container.appendChild(toast);
 
   setTimeout(() => {
-    toast.remove();
-  }, 3500);
+    toast.classList.add("is-leaving");
+    setTimeout(() => toast.remove(), 220);
+  }, 3300);
+}
+
+function confirmAction(
+  message,
+  {
+    title = "Are you sure?",
+    confirmLabel = "Continue",
+    danger = false,
+  } = {},
+) {
+  const dialog = document.createElement("dialog");
+  dialog.className = "admin-confirm-toast";
+  dialog.setAttribute("aria-labelledby", "admin-confirm-title");
+
+  const content = document.createElement("div");
+  content.className = "admin-confirm-content";
+  const titleElement = document.createElement("h2");
+  titleElement.id = "admin-confirm-title";
+  titleElement.textContent = title;
+  const messageElement = document.createElement("p");
+  messageElement.id = "admin-confirm-message";
+  messageElement.textContent = message;
+  content.append(titleElement, messageElement);
+  dialog.setAttribute("aria-describedby", messageElement.id);
+
+  const actions = document.createElement("div");
+  actions.className = "admin-confirm-actions";
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "admin-btn";
+  cancelButton.type = "button";
+  cancelButton.textContent = "Cancel";
+  cancelButton.autofocus = true;
+  const confirmButton = document.createElement("button");
+  confirmButton.className = `admin-btn ${danger ? "admin-btn-danger" : "admin-btn-primary"}`;
+  confirmButton.type = "button";
+  confirmButton.textContent = confirmLabel;
+  actions.append(cancelButton, confirmButton);
+  dialog.append(content, actions);
+  document.body.appendChild(dialog);
+
+  return new Promise((resolve) => {
+    cancelButton.addEventListener("click", () => dialog.close("cancel"));
+    confirmButton.addEventListener("click", () => dialog.close("confirm"));
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close("cancel");
+    });
+    dialog.addEventListener(
+      "close",
+      () => {
+        const confirmed = dialog.returnValue === "confirm";
+        dialog.remove();
+        resolve(confirmed);
+      },
+      { once: true },
+    );
+    dialog.showModal();
+  });
 }
 
 async function sendRequest(url, method, body = null) {
@@ -128,7 +192,7 @@ function initializeUserActions() {
 
       const action = nextStatus === "banned" ? "ban" : "activate";
 
-      if (!confirm(`Are you sure you want to ${action} this user?`)) {
+      if (!(await confirmAction(`Are you sure you want to ${action} this user?`))) {
         return;
       }
 
@@ -155,9 +219,10 @@ function initializeUserActions() {
       const userId = button.dataset.deleteUser;
 
       if (
-        !confirm(
+        !(await confirmAction(
           "Are you sure you want to delete this user? This action cannot be undone.",
-        )
+          { title: "Delete user?", confirmLabel: "Delete user", danger: true },
+        ))
       ) {
         return;
       }
@@ -183,7 +248,7 @@ function initializeUserActions() {
 
       const action = nextRole === "admin" ? "promote" : "demote";
 
-      if (!confirm(`Are you sure you want to ${action} this user?`)) {
+      if (!(await confirmAction(`Are you sure you want to ${action} this user?`))) {
         return;
       }
 
@@ -215,9 +280,10 @@ function initializeEventActions() {
       const eventId = button.dataset.deleteEvent;
 
       if (
-        !confirm(
+        !(await confirmAction(
           "Are you sure you want to delete this event and its related data?",
-        )
+          { title: "Delete event?", confirmLabel: "Delete event", danger: true },
+        ))
       ) {
         return;
       }
@@ -380,7 +446,7 @@ function initializeUserActions() {
     if (button.hasAttribute("data-user-status")) {
       const nextStatus = button.dataset.nextStatus;
       const action = nextStatus === "banned" ? "ban" : "activate";
-      if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+      if (!(await confirmAction(`Are you sure you want to ${action} this user?`))) return;
       button.disabled = true;
       try {
         const data = await sendRequest("/api/update_user_status", "PATCH", {
@@ -400,7 +466,7 @@ function initializeUserActions() {
     if (button.hasAttribute("data-change-role")) {
       const nextRole = button.dataset.nextRole;
       const action = nextRole === "admin" ? "promote" : "demote";
-      if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+      if (!(await confirmAction(`Are you sure you want to ${action} this user?`))) return;
       button.disabled = true;
       try {
         const data = await sendRequest("/api/update_user_role", "PATCH", {
@@ -418,9 +484,10 @@ function initializeUserActions() {
     }
 
     if (
-      !confirm(
+      !(await confirmAction(
         "Are you sure you want to delete this user? This action cannot be undone.",
-      )
+        { title: "Delete user?", confirmLabel: "Delete user", danger: true },
+      ))
     )
       return;
     button.disabled = true;

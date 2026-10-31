@@ -105,20 +105,33 @@
 
 <!-- ================= CREATE EVENT (popup) ================= -->
 <div class="modal-backdrop" id="createModal">
-  <div class="modal">
+  <div
+    class="modal create-event-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="createEventTitle"
+  >
     <div class="modal-head">
-      <h2>Create event ✨</h2>
-      <button class="close" onclick="closeModal('createModal')">×</button>
+      <h2 id="createEventTitle">Create event ✨</h2>
+      <button
+        class="close"
+        type="button"
+        aria-label="Close create event dialog"
+        onclick="closeModal('createModal')"
+      >
+        ×
+      </button>
     </div>
 
-    <div class="field">
-      <label>Event name</label
-      ><input class="input" id="evTitle" placeholder="e.g. Weekend trip" />
-    </div>
+    <div class="create-event-fields">
+      <div class="field">
+        <label>Event name</label
+        ><input class="input" id="evTitle" placeholder="e.g. Weekend trip" />
+      </div>
 
-    <div class="field">
-      <label>Category</label>
-      <select class="input" id="evCat">
+      <div class="field">
+        <label>Category</label>
+        <select class="input" id="evCat">
         <option value="birthday">Birthday</option>
         <option value="housing">Housing</option>
         <option value="hangout">Hangout</option>
@@ -134,69 +147,70 @@
         <option value="shopping">Shopping</option>
         <option value="festival">Festival</option>
         <option value="other">Other</option>
-      </select>
-    </div>
-    <div class="two">
-      <div class="field">
-        <label>Starting Date</label
-        ><input class="input" type="date" id="evStartDate" />
+        </select>
+      </div>
+      <div class="two">
+        <div class="field">
+          <label>Starting Date</label
+          ><input class="input" type="date" id="evStartDate" />
+        </div>
+        <div class="field">
+          <label>Ending Date</label
+          ><input class="input" type="date" id="evEndDate" />
+        </div>
       </div>
       <div class="field">
-        <label>Ending Date</label
-        ><input class="input" type="date" id="evEndDate" />
-      </div>
-    </div>
-    <div class="field">
-      <label>Initial total expense</label
-      ><input
-        class="input"
-        type="number"
-        min="0"
-        id="evTotal"
-        placeholder="0"
-        oninput="preview()"
-      />
-    </div>
-    <div class="field">
-      <label>Budget limit (optional)</label
-      ><input
-        class="input"
-        type="number"
-        min="0"
-        id="evBudget"
-        placeholder="e.g. 30000"
-      />
-    </div>
-
-    <div class="field">
-      <label>Invite people</label>
-      <div class="row" style="gap: 8px">
-        <input
+        <label>Initial total expense</label
+        ><input
           class="input"
-          id="inviteSearch"
-          placeholder="Type a Gmail…"
-          oninput="searchUsers()"
-          autocomplete="off"
+          type="number"
+          min="0"
+          id="evTotal"
+          placeholder="0"
+          oninput="preview()"
         />
-        <button
-          type="button"
-          class="btn"
-          style="white-space: nowrap"
-          onclick="openFriendModal()"
-        >
-          👥 Add friends
-        </button>
       </div>
-      <div id="suggest" class="suggest hide"></div>
-      <div class="chips" id="invitedChips" style="margin-top: 8px"></div>
-    </div>
+      <div class="field">
+        <label>Budget limit (optional)</label
+        ><input
+          class="input"
+          type="number"
+          min="0"
+          id="evBudget"
+          placeholder="e.g. 30000"
+        />
+      </div>
 
-    <div class="card c-mint" style="box-shadow: none">
-      <div class="row between">
-        <span>Members (including you)</span><b id="pvMembers">1</b>
+      <div class="field">
+        <label>Invite people</label>
+        <div class="row" style="gap: 8px">
+          <input
+            class="input"
+            id="inviteSearch"
+            placeholder="Type a Gmail…"
+            oninput="searchUsers()"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="btn"
+            style="white-space: nowrap"
+            onclick="openFriendModal()"
+          >
+            👥 Add friends
+          </button>
+        </div>
+        <div id="suggest" class="suggest hide"></div>
+        <div class="chips" id="invitedChips" style="margin-top: 8px"></div>
       </div>
-      <div class="row between" style="margin-top: 6px">
-        <span>Each person pays</span><b class="up" id="pvShare">৳0</b>
+
+      <div class="card c-mint" style="box-shadow: none">
+        <div class="row between">
+          <span>Members (including you)</span><b id="pvMembers">1</b>
+        </div>
+        <div class="row between" style="margin-top: 6px">
+          <span>Each person pays</span><b class="up" id="pvShare">৳0</b>
+        </div>
       </div>
     </div>
 

@@ -363,7 +363,13 @@
   </section>
 </div>
 
-<div class="admin-toast-container" id="adminToastContainer"></div>
+<div
+  class="admin-toast-container"
+  id="adminToastContainer"
+  role="region"
+  aria-label="Notifications"
+  aria-live="off"
+></div>
 
 <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
 {% endblock %}

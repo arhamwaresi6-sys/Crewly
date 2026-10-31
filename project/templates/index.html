@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block title %}Split expenses with friends{%
 endblock %} {% block nav %}{% include '_landing_nav.html' %}{% endblock %} {%
-block content %}
+block body_class %}landing-page{% endblock %} {% block content %}
 
 <!-- ============ HERO ============ -->
 <section class="hero">
@@ -22,8 +22,16 @@ block content %}
       Many friends. One <span class="grad-text">fair split.</span>
     </p>
     <ul class="hero-meta">
-      <li>📅 Trips · rent · dinners</li>
-      <li>✉️ Invite by Gmail</li>
+      <li>
+        <span class="material-symbols-rounded" aria-hidden="true"
+          >calendar_month</span
+        >
+        Trips · rent · dinners
+      </li>
+      <li>
+        <span class="material-symbols-rounded" aria-hidden="true">mail</span>
+        Invite by Gmail
+      </li>
     </ul>
     <div class="row wrap hero-cta">
       <a
@@ -108,7 +116,9 @@ block content %}
   </div>
   <div class="features">
     <div class="card feature c-lilac">
-      <div class="emoji">📅</div>
+      <div class="emoji" aria-hidden="true">
+        <span class="material-symbols-rounded">calendar_month</span>
+      </div>
       <h3>Events</h3>
       <p>
         Trips, rent, dinners – one event per shared cost. Click an event to open
@@ -116,7 +126,9 @@ block content %}
       </p>
     </div>
     <div class="card feature c-sky">
-      <div class="emoji">✉️</div>
+      <div class="emoji" aria-hidden="true">
+        <span class="material-symbols-rounded">mail</span>
+      </div>
       <h3>Invite by Gmail</h3>
       <p>
         Search a registered user by Gmail and invite them in one tap. They
