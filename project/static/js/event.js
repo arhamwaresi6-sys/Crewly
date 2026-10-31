@@ -1,4 +1,4 @@
-/* SplitWise+ event page interactions.
+/* Crewly event page interactions.
    This file only handles UI behavior. It does not change data or call an API. */
 (() => {
   const page = document.getElementById("eventPage");

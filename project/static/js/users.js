@@ -4,7 +4,7 @@
    (Optional) add ?search=text so the server does the filtering.
    Privacy tip: only send the full email to admins; normal users get a masked one (showEmail() in app.js). */
 function draw() {
-  $("count").textContent = USERS.length + " people are using SplitWise+";
+  $("count").textContent = USERS.length + " people are using Crewly";
   $("list").innerHTML =
     USERS.map((u) => {
       const n = u.count_event; // BACKEND: eventCount
